@@ -1,75 +1,147 @@
-/* static/css/DocRestore.css - 2026 結構對齊版 */
+// js/DocRestore.js - 2026 路徑修正與舊版 JSON 相容版
 
-:root {
-    --primary-yellow: #ffee58;
-    --academic-yellow: #fff9c4;
-    --tooltip-bg: #1e293b;
-    --tooltip-text: #ffffff !important;
-    --border-color: #cbd5e1;
-    --link-blue: #2563eb;
+let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
+let restorationCatalog = null;
+let chunkCache = {};
+
+$(document).ready(function() {
+    $("#QueryWord").focus();
+    loadBaseData();
+    loadRestorationCatalog();
+
+    // 綁定一鍵複製
+    $(document).on("click", ".copy-cite-btn", function() {
+        const $btn = $(this);
+        const text = $btn.siblings("textarea").val();
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = $btn.text();
+            $btn.text("已複製！").addClass("copied");
+            setTimeout(() => { $btn.text(originalText).removeClass("copied"); }, 2000);
+        });
+    });
+});
+
+// --- 路徑改回 ./data/ ---
+async function loadBaseData() {
+    const files = ['CiteForm', 'SYAuthor', 'Bookstore', 'AuthorDynasty', 'TSLegends'];
+    const promises = files.map(file => 
+        fetch(`./data/${file}.json`)
+            .then(res => res.json())
+            .then(json => dataStore[file] = json)
+            .catch(err => console.error(`載入 ${file} 失敗`, err))
+    );
+    await Promise.all(promises);
 }
 
-html, body {
-    margin: 0; padding: 0;
-    background-color: #f5f7fa;
-    font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
-    color: #334155;
-    font-size: 16px; 
+async function loadRestorationCatalog() {
+    try {
+        const response = await fetch('./data/restoration_db/catalog.json');
+        if (response.ok) restorationCatalog = await response.json();
+    } catch (err) { console.error("索引載入失敗", err); }
 }
 
-#container { display: flex; max-width: 1450px; margin: 0 auto; gap: 15px; padding: 15px; }
+async function getQueryResult() {
+    const query = $('#QueryWord').val().trim();
+    if (query.length < 1) return;
 
-/* 左側欄：搜尋與側欄資訊 */
-#leftCol {
-    width: 280px; flex-shrink: 0; background: white; padding: 15px;
-    border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    height: fit-content; position: sticky; top: 15px; z-index: 100;
+    $(".info_content, .info_content_s").html("<div style='padding:10px;'>檢索中...</div>");
+    $(".info_block, .info_block_s").show();
+
+    // 1. [作者朝代] 左側 2 欄
+    const authorRes = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
+    renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
+
+    // 2. [唐宋傳奇]
+    const tsRes = dataStore.TSLegends.filter(info => info[0].includes(query) || info[1].includes(query));
+    tsRes.unshift(["作者", "書名", "朝代"]);
+    renderTable("TSLegendsInfoContent", tsRes, [100, 150, 50]);
+
+    // 3. [引書體例] 
+    const citeRes = dataStore.CiteForm.filter(info => 
+        info[0].includes(query) || info[2].includes(query) || info[3].includes(query) || info[4].includes(query)
+    );
+    renderCiteForm(citeRes);
+
+    // 4. [宋元之後] 
+    const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && (info[0].includes(query) || info[1].includes(query)));
+    syRes.unshift(dataStore.SYAuthor[0]);
+    renderTable("SYAuthorInfoContent", syRes, [200, 100, 150, 60, 20, 60]);
+
+    // 5. [藏書地點]
+    const bookRes = dataStore.Bookstore.filter((info, idx) => idx !== 0 && (info[0].includes(query) || info[5].includes(query)));
+    bookRes.unshift(dataStore.Bookstore[0]);
+    renderTable("BookstoreInfoContent", bookRes, [180, 50, 40, 80, 100, 100, 30, 30]);
+
+    if (query.length > 1) searchRestorationDynamic(query);
 }
 
-.info_block_s { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 12px; }
-.info_title_s { font-size: 18px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 8px; cursor: pointer; }
-.info_content_s { border-radius: 4px; max-height: 300px; overflow-y: auto; overflow-x: visible !important; }
-
-/* 右側主內容區 */
-#rightCol { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
-.info_block { background: white; padding: 12px 18px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.info_title { font-size: 20px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 10px; cursor: pointer; }
-.info_content { max-height: 450px; overflow-y: auto; overflow-x: visible !important; border: 1px solid #edf2f7; border-radius: 6px; }
-
-/* 通用表格 */
-table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100%; font-size: 16px; }
-th, td { padding: 4px 8px !important; border: 1px solid #e2e8f0; line-height: 1.4; text-align: left; }
-th { background-color: var(--primary-yellow) !important; color: #713f12; position: sticky; top: 0; z-index: 10; }
-
-/* 搜尋並排 */
-#QueryForm { display: flex; gap: 8px; margin-bottom: 15px; align-items: center; }
-#QueryWord { flex-grow: 1; height: 32px; font-size: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px; }
-#QueryButton { height: 36px; padding: 0 15px; font-size: 16px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: #f8fafc; }
-
-/* 一鍵複製按鈕與 Textarea */
-textarea.cite-textarea {
-    width: 98%; height: 32px !important; min-height: 32px; margin: 4px 0 !important;
-    padding: 4px 100px 4px 8px !important; font-size: 15px; border: 1px solid var(--border-color); border-radius: 4px;
-    resize: none; overflow: hidden; display: block; background: #fff; font-family: "DFKai-sb", serif;
+function renderLeftAuthorTable(id, data) {
+    const $container = $("#" + id).html("");
+    if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
+    const $table = $("<table></table>").addClass("BasicTable");
+    $table.append("<tr><th>作者</th><th>朝代</th></tr>");
+    data.forEach(row => {
+        let html = `<tr><td style="position:relative;"><span>${row[0]}</span>`;
+        if (row[3]) html += ` <div class="tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
+        html += `</td><td>${row[1]}</td></tr>`;
+        $table.append(html);
+    });
+    $container.append($table);
 }
-.copy-cite-btn {
-    position: absolute; right: 15px; bottom: 8px; height: 26px; padding: 0 10px; font-size: 13px;
-    background-color: var(--primary-yellow); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; z-index: 10;
+
+function renderCiteForm(results) {
+    const $container = $("#CiteFormInfoContent").html("");
+    if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
+    const $table = $("<table></table>").addClass("BasicTable");
+    results.forEach(row => {
+        const $div = $("<div></div>").addClass("citeformtr");
+        const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
+                         (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
+        $div.append(`<tr><td width="100" rowspan="2"><b>${row[0]}</b></td><td width="60" rowspan="2">${row[1]}</td><td width="140" rowspan="2">${row[2]}</td><td width="500">${row[3]}</td><td width="60" rowspan="2">${tooltips}</td></tr>`);
+        $div.append(`<tr><td width="560" style="position:relative; padding:0!important;"><textarea readonly class="cite-textarea">${row[4]}</textarea><button class="copy-cite-btn">複製引證</button></td></tr>`);
+        $table.append($div);
+    });
+    $container.append($table);
 }
-.copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
 
-/* Tooltip 定位與轉向修復 */
-.tooltip { color: var(--link-blue); cursor: help; border-bottom: 1px dashed var(--link-blue); position: relative; display: inline-block; margin-left: 4px; font-size: 14px; }
-.tooltiptext {
-    display: none; position: absolute; background-color: var(--tooltip-bg); color: var(--tooltip-text) !important;
-    padding: 8px 12px; border-radius: 6px; width: 220px; z-index: 9999; bottom: 130%; font-size: 14px; line-height: 1.5; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: normal; word-break: break-all;
+function renderTable(id, data, widths) {
+    const $container = $("#" + id).html("");
+    if (!data.length) return;
+    const $table = $("<table></table>").addClass("BasicTable");
+    data.forEach((row, i) => {
+        const $tr = $("<tr></tr>");
+        row.forEach((cell, j) => {
+            const tag = i === 0 ? "th" : "td";
+            $("<" + tag + ">").attr("width", `${widths[j]}px`).html(cell).appendTo($tr);
+        });
+        $table.append($tr);
+    });
+    $container.append($table);
 }
-.tooltip:hover .tooltiptext { display: block; }
 
-/* 關鍵修正：右側向左長，左側向右長 */
-#rightCol .tooltiptext { right: 0; left: auto; }
-#leftCol .tooltiptext { left: 0 !important; right: auto !important; width: 200px; box-shadow: 4px 4px 12px rgba(0,0,0,0.4); }
+async function searchRestorationDynamic(query) {
+    if (!restorationCatalog) return;
+    let chunkIds = new Set();
+    const bookMatch = /《([^．》]+)/.exec(query);
+    const bookQuery = bookMatch ? bookMatch[1] : null;
+    if (bookQuery && restorationCatalog[bookQuery]) {
+        restorationCatalog[bookQuery].forEach(id => chunkIds.add(id));
+    } else {
+        Object.keys(restorationCatalog).forEach(key => { if (key.includes(query)) restorationCatalog[key].forEach(id => chunkIds.add(id)); });
+    }
+    const promises = Array.from(chunkIds).map(async id => {
+        if (chunkCache[id]) return chunkCache[id].filter(info => info[0].includes(query));
+        const res = await fetch(`./data/restoration_db/chunk_${id}.json`);
+        const data = await res.json();
+        chunkCache[id] = data;
+        return data.filter(info => info[0].includes(query));
+    });
+    const res = await Promise.all(promises);
+    const final = [].concat(...res);
+    if (final.length > 0) {
+        final.unshift(["書證", "還原文獻出版訊息", "備注"]);
+        renderTable("RestorationInfoContent", final, [500, 200, 80]);
+    }
+}
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+function ToggleInfo(target) { $("#" + target).toggle(); }
