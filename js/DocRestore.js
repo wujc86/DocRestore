@@ -66,10 +66,12 @@ async function getQueryResult() {
     $(".info_block_s").css("display", "block");
     $(".info_content, .info_content_s").html("資料檢索中...");
 
-    // 1. [作者朝代]
-    const authorResults = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
-    authorResults.unshift(["作者", "朝代", "朝代序"]);
-    renderTable("AuthorDynastyInfoContent", authorResults, [90, 60, 40]);
+    // 1. [作者朝代] (左側側欄專用渲染)
+    // 假設資料結構為：[0]作者, [1]朝代, [2]朝代序, [3]備註
+    const authorRes = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
+    
+    // 呼叫專為左側欄設計的渲染函式
+    renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes, [120, 80]);
 
     // 2. [唐宋傳奇]
     const tsLegendsResults = dataStore.TSLegends.filter(info => info[0].includes(query) || info[1].includes(query));
@@ -242,4 +244,46 @@ function ToggleInfo(target){
     } else {
         $("#"+target).css("display","block");
     }
+}
+
+// [作者朝代] 左側側欄專用渲染：僅 2 欄，備註轉 Tipbox，隱藏朝代序
+function renderLeftAuthorTable(id, data, widths) {
+    const $container = $("#" + id);
+    if (!data || data.length === 0) { 
+        $container.html("<div style='padding:5px;'>查無資料</div>"); 
+        return; 
+    }
+    
+    const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" });
+    
+    // 1. 生成精簡表頭 (僅 2 欄)
+    const $head = $("<tr></tr>");
+    ["作者", "朝代"].forEach((h, j) => {
+        $("<th></th>").attr("width", `${widths[j]}px`).html(h).appendTo($head);
+    });
+    $head.appendTo($table);
+    
+    // 2. 生成資料列
+    data.forEach(row => {
+        const $tr = $("<tr></tr>");
+        
+        // 第一欄：作者 (row[0]) + 備註 (row[3]) Tooltip
+        const $tdAuthor = $("<td></td>").css("position", "relative");
+        let authorHtml = `<span>${row[0]}</span>`;
+        
+        // 如果有第四欄 (備註 row[3])，則加上 Tipbox
+        if (row[3] && row[3].toString().trim().length > 0) {
+            authorHtml += ` <div class="tooltip academic-tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
+        }
+        $tdAuthor.html(authorHtml).appendTo($tr);
+        
+        // 第二欄：朝代 (row[1])
+        $("<td></td>").html(row[1]).appendTo($tr);
+        
+        // 第三欄 (朝代序 row[2]) 自動被忽略，不執行 append
+        
+        $tr.appendTo($table);
+    });
+    
+    $container.html($table);
 }
