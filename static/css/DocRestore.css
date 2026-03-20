@@ -1,158 +1,67 @@
-/* DocRestore.css - 終極美化與問題修復版 */
+/* static/css/DocRestore.css */
 
-/* --- 基礎相容性設定 --- */
 :root {
-    --primary-yellow: #ffee58; /* 主黃色 */
-    --hover-yellow: #fef9c3;   /* 滑鼠懸停淡黃 */
-    --academic-yellow: #fff9c4; /* 表格底色 */
-    --tooltip-bg: #1e293b;     /* Tooltip 背景（深藍黑） */
-    --tooltip-text: #ffffff;   /* Tooltip 字體顏色（純白） */
+    --primary-yellow: #ffee58;
+    --academic-yellow: #fff9c4;
+    --tooltip-bg: #1e293b;
+    --tooltip-text: #ffffff;
 }
 
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background-color: #f5f7fa; /* 輕微的灰色底，讓白色卡片更明顯 */
+    margin: 0; padding: 0;
+    background-color: #f5f7fa;
     font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
 }
 
-/* --- 主容器與佈局：修復「一開始剩下這麼小」的問題 --- */
-#container {
-    display: flex;
-    max-width: 1400px; /* 限制最大寬度，避免螢幕太大導致排版鬆散 */
-    margin: 0 auto;
-    gap: 20px;
-    padding: 20px;
-}
+#container { display: flex; max-width: 1400px; margin: 0 auto; gap: 15px; padding: 15px; }
 
-/* 左側欄：固定在視窗左側且為卡片式設計 */
 #leftCol {
-    width: 280px;
-    flex-shrink: 0;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    height: fit-content;
-    position: sticky;
-    top: 20px;
+    width: 260px; flex-shrink: 0; background: white; padding: 15px;
+    border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: fit-content; position: sticky; top: 15px;
 }
 
-/* 右側欄：內容區，預設就會展開全貌 */
-#rightCol {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* 區塊間距 */
-}
+#rightCol { flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
 
-/* --- 問題修復 2: 查詢按鈕與搜尋框並排 --- */
-#QueryForm {
-    display: flex;
-    gap: 10px; /* 搜尋框與按鈕的間距 */
-    align-items: center; /* 垂直居中對齊 */
-    margin-bottom: 20px;
-}
+/* 搜尋框並排修復 */
+#QueryForm { display: flex; gap: 8px; margin-bottom: 15px; }
+#QueryWord { flex-grow: 1; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; font-size: 14px; }
+#QueryButton { height: 30px; padding: 0 12px; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1; }
+#QueryButton:hover { background-color: var(--primary-yellow); }
 
-#QueryWord {
-    flex-grow: 1; /* 搜尋框自動填滿剩餘空間 */
-    height: 30px;
-    font-size: 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 0 8px;
-}
-
-#QueryButton {
-    height: 32px;
-    padding: 0 15px;
-    font-size: 16px;
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-#QueryButton:hover {
-    background-color: var(--primary-yellow);
-}
-
-/* --- 標題美化與修正：去除 pre-wrap 導致的額外空白 --- */
-.info_title, .info_title_s {
-    font-size: 20px;
-    font-weight: bold;
-    color: #2c3e50;
-    border-left: 5px solid var(--primary-yellow); /* 黃色裝飾條 */
-    padding-left: 10px;
-    margin-bottom: 12px;
-    white-space: nowrap; /* 確保標題不換行 */
-}
-
-/* --- 資訊卡片容器：修復「一開始剩下這麼小」的問題 --- */
+/* 緊湊型卡片 */
 .info_block, .info_block_s {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    
-    /* 修復：拿掉 display: none; */
-    /* 不要讓區塊隱藏，使用者就能在沒搜尋時也看到全貌 */
+    background: white; padding: 10px 15px; border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.info_title, .info_title_s {
+    font-size: 18px; font-weight: bold; border-left: 4px solid var(--primary-yellow);
+    padding-left: 8px; margin-bottom: 8px; cursor: pointer;
 }
 
 .info_content, .info_content_s {
-    border: 1px solid #edf2f7;
-    border-radius: 8px;
-    max-height: 400px; /* 增加高度限制 */
-    overflow-y: auto;
+    border: 1px solid #edf2f7; border-radius: 6px; max-height: 350px; overflow-y: auto;
 }
 
-/* 表格與 Tooltip 繼承設定 */
-table.BasicTable {
-    border-collapse: collapse;
-    width: 100%;
+/* 緊湊型表格 */
+table.BasicTable { border-collapse: collapse; width: 100%; background-color: var(--academic-yellow); }
+th, td { padding: 4px 8px !important; border: 1px solid #e2e8f0; font-size: 14px; text-align: left; }
+th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 2; }
+tr:hover { background-color: white !important; }
+
+/* Textarea 緊湊修正 */
+textarea {
+    width: 98%; height: 28px; min-height: 28px; margin: 2px 0;
+    padding: 2px 5px; font-size: 13px; border: 1px solid #cbd5e1;
+    resize: none; overflow: hidden; background: #fff;
 }
 
-th {
-    background-color: var(--hover-yellow) !important;
-    color: #713f12;
-    padding: 10px;
-    border-bottom: 2px solid var(--primary-yellow);
-}
-
-td {
-    padding: 10px;
-    border: 1px solid #f1f5f9;
-}
-
-tr:nth-child(even) { background-color: #fafafa; }
-tr:hover { background-color: var(--academic-yellow) !important; }
-
-/* 問題修復 3: 備註與補充 Tooltip 字體顏色與背景優化 */
-.tooltip {
-    color: #2563eb; /* 在頁面上的 "[備註]" 文字為藍色 */
-    cursor: help;
-    border-bottom: 1px dashed #2563eb;
-    display: inline-block;
-}
-
+/* Tooltip 顏色修復 */
+.tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; margin-right: 5px; }
 .tooltiptext {
-    /* 1. 設定深色背景 */
-    background-color: var(--tooltip-bg);
-    
-    /* 2. 重點修復：設定字體為白色，解決易讀性問題 */
-    color: var(--tooltip-text) !important; 
-    
-    /* 其他優化 */
-    padding: 10px;
-    font-size: 13px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: none; position: absolute; background-color: var(--tooltip-bg);
+    color: var(--tooltip-text) !important; padding: 8px; border-radius: 6px;
+    width: 220px; z-index: 100; bottom: 125%; left: 0; font-size: 12px;
 }
-
-/* 修復 Tooltip 出現時的顯示 */
-.tooltip:hover .tooltiptext {
-    display: block;
-    z-index: 10;
-}
+.tooltip:hover .tooltiptext { display: block; }
