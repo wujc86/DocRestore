@@ -1,4 +1,4 @@
-/* static/css/DocRestore.css */
+/* static/css/DocRestore.css - 終極清晰大字版 */
 
 :root {
     --primary-yellow: #ffee58;
@@ -10,58 +10,80 @@
 html, body {
     margin: 0; padding: 0;
     background-color: #f5f7fa;
+    /* 確保標楷體優先，若無則使用微軟正黑體 */
     font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
 }
 
-#container { display: flex; max-width: 1400px; margin: 0 auto; gap: 15px; padding: 15px; }
+#container { display: flex; max-width: 1450px; margin: 0 auto; gap: 15px; padding: 15px; }
 
 #leftCol {
-    width: 260px; flex-shrink: 0; background: white; padding: 15px;
+    width: 280px; flex-shrink: 0; background: white; padding: 18px;
     border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     height: fit-content; position: sticky; top: 15px;
 }
 
-#rightCol { flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
+#rightCol { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
 
-/* 搜尋框並排修復 */
+/* 搜尋框部分字體調大 */
 #QueryForm { display: flex; gap: 8px; margin-bottom: 15px; }
-#QueryWord { flex-grow: 1; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; font-size: 14px; }
-#QueryButton { height: 30px; padding: 0 12px; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1; }
+#QueryWord { 
+    flex-grow: 1; height: 34px; border: 1px solid #cbd5e1; 
+    border-radius: 4px; padding: 0 10px; font-size: 16px; 
+}
+#QueryButton { 
+    height: 36px; padding: 0 15px; cursor: pointer; 
+    border-radius: 4px; border: 1px solid #cbd5e1; font-size: 16px;
+}
 #QueryButton:hover { background-color: var(--primary-yellow); }
 
-/* 緊湊型卡片 */
+/* 卡片與標題字體調大 */
 .info_block, .info_block_s {
-    background: white; padding: 10px 15px; border-radius: 8px;
+    background: white; padding: 12px 18px; border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .info_title, .info_title_s {
-    font-size: 18px; font-weight: bold; border-left: 4px solid var(--primary-yellow);
-    padding-left: 8px; margin-bottom: 8px; cursor: pointer;
+    font-size: 20px; /* 從 18px 調升 */
+    font-weight: bold; border-left: 5px solid var(--primary-yellow);
+    padding-left: 10px; margin-bottom: 10px; cursor: pointer;
 }
 
 .info_content, .info_content_s {
-    border: 1px solid #edf2f7; border-radius: 6px; max-height: 350px; overflow-y: auto;
+    border: 1px solid #edf2f7; border-radius: 6px; 
+    max-height: 450px; /* 稍微增加高度增加視野 */
+    overflow-y: auto;
 }
 
-/* 緊湊型表格 */
+/* 表格內容字體全面調大 */
 table.BasicTable { border-collapse: collapse; width: 100%; background-color: var(--academic-yellow); }
-th, td { padding: 4px 8px !important; border: 1px solid #e2e8f0; font-size: 14px; text-align: left; }
+th, td { 
+    padding: 6px 10px !important; /* 稍微增加內距增加呼吸感 */
+    border: 1px solid #e2e8f0; 
+    font-size: 16px; /* 從 14px 調升，閱讀更輕鬆 */
+    text-align: left; 
+}
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 2; }
 tr:hover { background-color: white !important; }
 
-/* Textarea 緊湊修正 */
+/* Textarea 字體調大並修正高度 */
 textarea {
-    width: 98%; height: 28px; min-height: 28px; margin: 2px 0;
-    padding: 2px 5px; font-size: 13px; border: 1px solid #cbd5e1;
-    resize: none; overflow: hidden; background: #fff;
+    width: 98%; 
+    height: 32px; /* 增加高度以容納更大的 16px 字體 */
+    min-height: 32px; 
+    margin: 4px 0;
+    padding: 4px 8px; 
+    font-size: 15px; /* 從 13px 調升 */
+    border: 1px solid #cbd5e1;
+    resize: vertical; /* 允許垂直拉伸，適應長例句 */
+    background: #fff;
+    font-family: "DFKai-sb", serif;
 }
 
-/* Tooltip 顏色修復 */
-.tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; margin-right: 5px; }
+/* Tooltip 修正 */
+.tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; margin-right: 8px; }
 .tooltiptext {
     display: none; position: absolute; background-color: var(--tooltip-bg);
-    color: var(--tooltip-text) !important; padding: 8px; border-radius: 6px;
-    width: 220px; z-index: 100; bottom: 125%; left: 0; font-size: 12px;
+    color: var(--tooltip-text) !important; padding: 10px; border-radius: 8px;
+    width: 250px; z-index: 100; bottom: 125%; left: 0; font-size: 14px;
 }
 .tooltip:hover .tooltiptext { display: block; }
