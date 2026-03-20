@@ -1,31 +1,37 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>引書體例及還原查詢系統</title>
-<link rel="icon" href="static/pic/DocRestore.ico" type="image/x-icon" />
-<link rel="stylesheet" href="static/css/DocRestore.css" type="text/css" />
+    <meta charset="UTF-8">
+    <title>引書體例及還原查詢系統</title>
+    <link rel="icon" href="static/pic/DocRestore.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="static/css/DocRestore.css" type="text/css" />
 
-<script language="JavaScript" type="text/javascript" src="static/js/jquery-3.3.1.min.js"></script>
-<script language="JavaScript" type="text/javascript" src="static/js/DocRestore.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-<script language="JavaScript" type="text/javascript">
-$(document).ready(function(){
-	$("#QueryWord").focus(); //直接跳到輸入框
+    <script src="js/DocRestore.js"></script>
 
-    $("#QueryWord").keypress(function(event){       
-        if (event.keyCode == 13) {        	
-        	getQueryResult();//取得對應的查詢結果
-        	return false;
-        }
-    });		
+    <script language="JavaScript" type="text/javascript">
+    $(document).ready(function(){
+        // 檢查 jQuery 是否真的活著
+        console.log("jQuery 已成功載入！");
 
-	$("#QueryButton").click(function(){
-		getQueryResult(); //取得對應的查詢結果
-		return false;
-	});	
-})
-</script>
+        $("#QueryWord").focus(); 
+
+        $("#QueryWord").keypress(function(event){       
+            if (event.keyCode == 13) {        	
+                event.preventDefault(); // 強制阻止表單跳轉
+                getQueryResult();
+                return false;
+            }
+        });		
+
+        $("#QueryButton").click(function(event){
+            event.preventDefault(); // 強制阻止表單跳轉
+            getQueryResult();
+            return false;
+        });	
+    });
+    </script>
 </head>
 <body>
 	<div id="container">	
