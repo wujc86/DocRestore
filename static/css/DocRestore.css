@@ -140,3 +140,24 @@ textarea.cite-textarea {
 /* 捲軸美化 */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* --- 修正：左側欄位 Tip 轉向 --- */
+#leftCol .tooltiptext {
+    /* 取消先前的向左展開設定 */
+    right: auto !important; 
+    
+    /* 改為向右展開 */
+    left: 0 !important; 
+    
+    /* 側欄空間較窄，建議稍微縮減寬度以免蓋到右邊內容 */
+    width: 200px; 
+    
+    /* 增加一點點陰影深度，讓它在白色背景上更明顯 */
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.4);
+}
+
+/* 確保 Tip 裡面的文字在標楷體下也能換行正常 */
+#leftCol .tooltiptext {
+    white-space: normal;
+    word-break: break-all;
+}
