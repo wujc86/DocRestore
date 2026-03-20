@@ -7,28 +7,24 @@
     <link rel="stylesheet" href="static/css/DocRestore.css" type="text/css" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
     <script src="js/DocRestore.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function(){
-            console.log("頁面與 jQuery 已成功載入！");
+            console.log("系統已啟動：jQuery 載入成功");
             $("#QueryWord").focus(); 
-
-            // 注意：查詢邏輯已在 DocRestore.js 中綁定按鈕與 Enter 鍵
-            // 若 DocRestore.js 運作正常，這裡不需要額外寫 keypress 邏輯
         });
     </script>
 </head>
 <body>
     <div id="container">	
         <div id="leftCol">
-            <div style="text-align: center; margin-bottom: 15px;">
-                <img id="mylogo" src="static/pic/DocRestoreLogo.png" style="width: 100%; height: auto; max-width: 240px;">
-            </div>
-
-            <form id="QueryForm" onsubmit="return false;">
-                <input type="text" name="QueryWord" id="QueryWord" placeholder="輸入查詢字串"/>
-                <button type="button" id="QueryButton">查詢</button>
+            <img id="mylogo" src="static/pic/DocRestoreLogo.png" style="width:100%; height:auto; max-width:240px; margin-bottom:15px;">
+            
+            <form id="QueryForm" onsubmit="getQueryResult(); return false;">
+                <input type="text" id="QueryWord" placeholder="輸入查詢字串"/>	
+                <button type="button" id="QueryButton" onclick="getQueryResult()">查詢</button>
             </form>
 
             <div id="resultArea">
@@ -36,7 +32,6 @@
                     <div class="info_title_s" onclick="ToggleInfo('AuthorDynastyInfoContent')">[作者朝代]</div>
                     <div class="info_content_s" id="AuthorDynastyInfoContent"></div>
                 </div>
-
                 <div class="info_block_s" id="TSLegendsInfo">
                     <div class="info_title_s" onclick="ToggleInfo('TSLegendsInfoContent')">[唐宋傳奇]</div>
                     <div class="info_content_s" id="TSLegendsInfoContent"></div>
