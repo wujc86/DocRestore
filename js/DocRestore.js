@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 最終完整版
+// js/DocRestore.js - 2026 整合版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -9,7 +9,7 @@ $(document).ready(function() {
     loadBaseData();
     loadRestorationCatalog();
 
-    // 綁定一鍵複製按鈕
+    // 綁定一鍵複製按鈕 (事件委派)
     $(document).on("click", ".copy-cite-btn", function() {
         const $btn = $(this);
         const text = $btn.siblings("textarea").val();
@@ -21,7 +21,7 @@ $(document).ready(function() {
     });
 });
 
-// 資料讀取：修正為 ./static/data/
+// 資料讀取路徑統一修正為 static/data/
 async function loadBaseData() {
     const files = ['CiteForm', 'SYAuthor', 'Bookstore', 'AuthorDynasty', 'TSLegends'];
     const promises = files.map(file => 
@@ -47,48 +47,53 @@ async function getQueryResult() {
     $(".info_content, .info_content_s").html("<div style='padding:10px;'>檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
-    // 1. 作者朝代：側欄專用 2 欄渲染
+    // 1. [作者朝代] 左側 2 欄 + Tipbox 渲染
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
-    // 2. 唐宋傳奇
+    // 2. [唐宋傳奇] 
     const tsRes = dataStore.TSLegends.filter(info => info[0].includes(query) || info[1].includes(query));
     tsRes.unshift(["作者", "書名", "朝代"]);
     renderTable("TSLegendsInfoContent", tsRes, [100, 150, 50]);
 
-    // 3. 宋元之後
+    // 3. [引書體例] 帶複製按鈕渲染
+    const citeRes = dataStore.CiteForm.filter(info => 
+        info[0].includes(query) || info[2].includes(query) || info[3].includes(query) || info[4].includes(query)
+    );
+    renderCiteForm(citeRes);
+
+    // 4. [宋元之後] 
     const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && (info[0].includes(query) || info[1].includes(query)));
     syRes.unshift(dataStore.SYAuthor[0]);
     renderTable("SYAuthorInfoContent", syRes, [200, 100, 150, 60, 20, 60]);
 
-    // 4. 藏書地點
+    // 5. [藏書地點]
     const bookRes = dataStore.Bookstore.filter((info, idx) => idx !== 0 && (info[0].includes(query) || info[5].includes(query)));
     bookRes.unshift(dataStore.Bookstore[0]);
     renderTable("BookstoreInfoContent", bookRes, [180, 50, 40, 80, 100, 100, 30, 30]);
 
-    // 5. 引書體例：帶複製按鈕渲染
-    const citeRes = dataStore.CiteForm.filter(info => info[0].includes(query) || info[2].includes(query) || info[3].includes(query) || info[4].includes(query));
-    renderCiteForm(citeRes);
-
     if (query.length > 1) searchRestorationDynamic(query);
 }
 
-// 渲染函式：側欄作者朝代 (2 欄)
+// 側欄 [作者朝代]：作者 / 朝代 兩欄，備註進 Tipbox
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
     if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
     const $table = $("<table></table>").addClass("BasicTable");
-    $table.append("<tr><th>作者</th><th>朝代</th></tr>");
+    $table.append("<tr><th width='120px'>作者</th><th width='80px'>朝代</th></tr>");
     data.forEach(row => {
-        let html = `<tr><td style="position:relative;"><span>${row[0]}</span>`;
-        if (row[3]) html += ` <div class="tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
-        html += `</td><td>${row[1]}</td></tr>`;
-        $table.append(html);
+        let authorHtml = `<td style="position:relative;"><span>${row[0]}</span>`;
+        // 如果第四欄 [3] 有備註
+        if (row[3] && row[3].toString().trim() !== "") {
+            authorHtml += ` <div class="tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
+        }
+        authorHtml += "</td>";
+        $table.append(`<tr>${authorHtml}<td>${row[1]}</td></tr>`);
     });
     $container.append($table);
 }
 
-// 渲染函式：引書體例 (帶一鍵複製)
+// [引書體例]：帶一鍵複製按鈕
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
@@ -118,7 +123,6 @@ function renderTable(id, data, widths) {
     $container.append($table);
 }
 
-// 動態分片檢索路徑修正
 async function searchRestorationDynamic(query) {
     if (!restorationCatalog) return;
     let chunkIds = new Set();
