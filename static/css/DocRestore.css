@@ -81,9 +81,27 @@ textarea {
 
 /* Tooltip 修正 */
 .tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; margin-right: 8px; }
+/* static/css/DocRestore.css 裡的 .tooltiptext 區塊 */
+
 .tooltiptext {
-    display: none; position: absolute; background-color: var(--tooltip-bg);
-    color: var(--tooltip-text) !important; padding: 10px; border-radius: 8px;
-    width: 250px; z-index: 100; bottom: 125%; left: 0; font-size: 14px;
+    display: none;
+    position: absolute;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text) !important;
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 250px; /* 維持您想要的寬度 */
+    z-index: 100;
+    bottom: 125%; /* 顯示在圖示上方 */
+    
+    /* --- 核心修復代碼 --- */
+    left: auto;   /* 取消靠左對齊 */
+    right: 0;     /* 改為靠右對齊，讓視窗往左邊展開 */
+    /* ------------------- */
+    
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    white-space: normal; /* 確保長文字會自動換行，不會撐破視窗 */
 }
 .tooltip:hover .tooltiptext { display: block; }
