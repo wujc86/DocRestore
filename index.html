@@ -1,0 +1,27 @@
+<head>
+<meta charset="UTF-8">
+<title>引書體例及還原查詢系統</title>
+<link rel="icon" href="static/pic/DocRestore.ico" type="image/x-icon" />
+<link rel="stylesheet" href="css/DocRestore.css" type="text/css" />
+
+<script language="JavaScript" type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/DocRestore.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+$(document).ready(function(){
+	$("#QueryWord").focus(); //直接跳到輸入框
+
+    $("#QueryWord").keypress(function(event){       
+        if (event.keyCode == 13) {        	
+        	getQueryResult();//取得對應的查詢結果
+        	return false;
+        }
+    });		
+
+	$("#QueryButton").click(function(){
+		getQueryResult(); //取得對應的查詢結果
+		return false;
+	});	
+})
+</script>
+</head>
