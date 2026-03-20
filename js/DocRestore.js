@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 整合版
+// js/DocRestore.js - 舊版 JSON 索引相容版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -9,7 +9,7 @@ $(document).ready(function() {
     loadBaseData();
     loadRestorationCatalog();
 
-    // 綁定一鍵複製按鈕 (事件委派)
+    // 綁定一鍵複製按鈕
     $(document).on("click", ".copy-cite-btn", function() {
         const $btn = $(this);
         const text = $btn.siblings("textarea").val();
@@ -21,7 +21,7 @@ $(document).ready(function() {
     });
 });
 
-// 資料讀取路徑統一修正為 static/data/
+// 修正讀取路徑為 static/data/
 async function loadBaseData() {
     const files = ['CiteForm', 'SYAuthor', 'Bookstore', 'AuthorDynasty', 'TSLegends'];
     const promises = files.map(file => 
@@ -48,6 +48,7 @@ async function getQueryResult() {
     $(".info_block, .info_block_s").show();
 
     // 1. [作者朝代] 左側 2 欄 + Tipbox 渲染
+    // 舊版索引：[0]作者, [1]朝代, [2]朝代序, [3]備註
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
@@ -57,6 +58,7 @@ async function getQueryResult() {
     renderTable("TSLegendsInfoContent", tsRes, [100, 150, 50]);
 
     // 3. [引書體例] 帶複製按鈕渲染
+    // 舊版索引：[0]書名, [1]部類, [2]作者, [3]體例, [4]引例, [5]備註, [6]補充
     const citeRes = dataStore.CiteForm.filter(info => 
         info[0].includes(query) || info[2].includes(query) || info[3].includes(query) || info[4].includes(query)
     );
@@ -75,7 +77,7 @@ async function getQueryResult() {
     if (query.length > 1) searchRestorationDynamic(query);
 }
 
-// 側欄 [作者朝代]：作者 / 朝代 兩欄，備註進 Tipbox
+// 側欄 [作者朝代]：作者 (帶 Tipbox 備註) / 朝代 兩欄
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
     if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
@@ -83,11 +85,12 @@ function renderLeftAuthorTable(id, data) {
     $table.append("<tr><th width='120px'>作者</th><th width='80px'>朝代</th></tr>");
     data.forEach(row => {
         let authorHtml = `<td style="position:relative;"><span>${row[0]}</span>`;
-        // 如果第四欄 [3] 有備註
+        // 舊版備註索引為 [3]
         if (row[3] && row[3].toString().trim() !== "") {
             authorHtml += ` <div class="tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
         }
         authorHtml += "</td>";
+        // 舊版朝代索引為 [1]
         $table.append(`<tr>${authorHtml}<td>${row[1]}</td></tr>`);
     });
     $container.append($table);
@@ -100,8 +103,10 @@ function renderCiteForm(results) {
     const $table = $("<table></table>").addClass("BasicTable");
     results.forEach(row => {
         const $div = $("<div></div>").addClass("citeformtr");
+        // 舊版備註 [5], 補充 [6]
         const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
         $div.append(`<tr><td width="100" rowspan="2"><b>${row[0]}</b></td><td width="60" rowspan="2">${row[1]}</td><td width="140" rowspan="2">${row[2]}</td><td width="500">${row[3]}</td><td width="60" rowspan="2">${tooltips}</td></tr>`);
+        // 引例 [4] 放入 textarea
         $div.append(`<tr><td width="560" style="position:relative; padding:0!important;"><textarea readonly class="cite-textarea">${row[4]}</textarea><button class="copy-cite-btn">複製引證</button></td></tr>`);
         $table.append($div);
     });
