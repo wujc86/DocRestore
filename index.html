@@ -25,3 +25,46 @@ $(document).ready(function(){
 })
 </script>
 </head>
+<body>
+	<div id="container">	
+		<div id="leftCol">
+			<img id="mylogo" src="{{ url_for('static',filename='pic/DocRestoreLogo.png')}}" height="90px">
+			<form id="QueryForm" name="QueryForm">
+				<input type="text" name="QueryWord" id="QueryWord" placeholder="輸入查詢字串"/>	
+			</form>
+			<button id="QueryButton">查詢</button>
+			<div id="resultArea">
+				<div class="info_block_s" id="AuthorDynastyInfo">
+					<div class="info_title_s">[作者朝代]<span id="AuthorDynastyInfoTitle"></span></div>
+					<div class="info_content_s" id="AuthorDynastyInfoContent"></div>
+				</div>
+
+				<div class="info_block_s" id="TSLegendsInfo">
+					<div class="info_title_s">[唐宋傳奇]<span id="TSLegendsInfoTitle"></span></div>
+					<div class="info_content_s" id="TSLegendsInfoContent"></div>
+				</div>
+			</div>
+		</div> <!--leftColumn-->
+		<div id="rightCol">	
+			<div class="info_block" id="CiteFormInfo">
+				<div class="info_title">[引書體例]<span id="CiteFormInfoTitle"></span></div>
+				<div class="info_content" id="CiteFormInfoContent"></div>
+			</div>
+			<div class="info_block" id="SYAuthorInfo">
+				<div class="info_title">[宋元之後]<span id="SYAuthorInfoTitle"></span></div>
+				<div class="info_content" id="SYAuthorInfoContent"></div>
+			</div>
+			<div class="info_block" id="BookstoreInfo">
+				<div class="info_title">[藏書地點]<span id="BookstoreInfoTitle"></span></div>
+				<div class="info_content" id="BookstoreInfoContent"></div>
+			</div>
+			<div class="info_block" id="RestorationInfo">
+				<div class="info_title">[已經還原]<span id="RestorationInfoTitle"></span></div>
+				<div class="info_content" id="RestorationInfoContent"></div>
+			</div>
+
+		</div><!--rightColumn-->
+	</div> <!--Container-->
+	<!-- <div id="footer">本系統最佳解析度 1280 X 800，請用Chrome瀏覽器</div>
+</body>
+</html>
