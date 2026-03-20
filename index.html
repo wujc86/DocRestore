@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <title>引書體例及還原查詢系統</title>
@@ -7,72 +7,61 @@
     <link rel="stylesheet" href="static/css/DocRestore.css" type="text/css" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
     <script src="js/DocRestore.js"></script>
 
-    <script language="JavaScript" type="text/javascript">
-    $(document).ready(function(){
-        // 檢查 jQuery 是否真的活著
-        console.log("jQuery 已成功載入！");
+    <script type="text/javascript">
+        $(document).ready(function(){
+            console.log("頁面與 jQuery 已成功載入！");
+            $("#QueryWord").focus(); 
 
-        $("#QueryWord").focus(); 
-
-        $("#QueryWord").keypress(function(event){       
-            if (event.keyCode == 13) {        	
-                event.preventDefault(); // 強制阻止表單跳轉
-                getQueryResult();
-                return false;
-            }
-        });		
-
-        $("#QueryButton").click(function(event){
-            event.preventDefault(); // 強制阻止表單跳轉
-            getQueryResult();
-            return false;
-        });	
-    });
+            // 注意：查詢邏輯已在 DocRestore.js 中綁定按鈕與 Enter 鍵
+            // 若 DocRestore.js 運作正常，這裡不需要額外寫 keypress 邏輯
+        });
     </script>
 </head>
 <body>
-	<div id="container">	
-		<div id="leftCol">
-			<img id="mylogo" src="static/pic/DocRestoreLogo.png" height="90px">
-			<form id="QueryForm" name="QueryForm">
-				<input type="text" name="QueryWord" id="QueryWord" placeholder="輸入查詢字串"/>	
-			</form>
-			<button id="QueryButton">查詢</button>
-			<div id="resultArea">
-				<div class="info_block_s" id="AuthorDynastyInfo">
-					<div class="info_title_s">[作者朝代]<span id="AuthorDynastyInfoTitle"></span></div>
-					<div class="info_content_s" id="AuthorDynastyInfoContent"></div>
-				</div>
+    <div id="container">	
+        <div id="leftCol">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <img id="mylogo" src="static/pic/DocRestoreLogo.png" style="width: 100%; height: auto; max-width: 240px;">
+            </div>
 
-				<div class="info_block_s" id="TSLegendsInfo">
-					<div class="info_title_s">[唐宋傳奇]<span id="TSLegendsInfoTitle"></span></div>
-					<div class="info_content_s" id="TSLegendsInfoContent"></div>
-				</div>
-			</div>
-		</div> <!--leftColumn-->
-		<div id="rightCol">	
-			<div class="info_block" id="CiteFormInfo">
-				<div class="info_title">[引書體例]<span id="CiteFormInfoTitle"></span></div>
-				<div class="info_content" id="CiteFormInfoContent"></div>
-			</div>
-			<div class="info_block" id="SYAuthorInfo">
-				<div class="info_title">[宋元之後]<span id="SYAuthorInfoTitle"></span></div>
-				<div class="info_content" id="SYAuthorInfoContent"></div>
-			</div>
-			<div class="info_block" id="BookstoreInfo">
-				<div class="info_title">[藏書地點]<span id="BookstoreInfoTitle"></span></div>
-				<div class="info_content" id="BookstoreInfoContent"></div>
-			</div>
-			<div class="info_block" id="RestorationInfo">
-				<div class="info_title">[已經還原]<span id="RestorationInfoTitle"></span></div>
-				<div class="info_content" id="RestorationInfoContent"></div>
-			</div>
+            <form id="QueryForm" onsubmit="return false;">
+                <input type="text" name="QueryWord" id="QueryWord" placeholder="輸入查詢字串"/>
+                <button type="button" id="QueryButton">查詢</button>
+            </form>
 
-		</div><!--rightColumn-->
-	</div> <!--Container-->
-	<!-- <div id="footer">本系統最佳解析度 1280 X 800，請用Chrome瀏覽器</div>
+            <div id="resultArea">
+                <div class="info_block_s" id="AuthorDynastyInfo">
+                    <div class="info_title_s" onclick="ToggleInfo('AuthorDynastyInfoContent')">[作者朝代]</div>
+                    <div class="info_content_s" id="AuthorDynastyInfoContent"></div>
+                </div>
+
+                <div class="info_block_s" id="TSLegendsInfo">
+                    <div class="info_title_s" onclick="ToggleInfo('TSLegendsInfoContent')">[唐宋傳奇]</div>
+                    <div class="info_content_s" id="TSLegendsInfoContent"></div>
+                </div>
+            </div>
+        </div> 
+
+        <div id="rightCol">	
+            <div class="info_block" id="CiteFormInfo">
+                <div class="info_title" onclick="ToggleInfo('CiteFormInfoContent')">[引書體例]</div>
+                <div class="info_content" id="CiteFormInfoContent"></div>
+            </div>
+            <div class="info_block" id="SYAuthorInfo">
+                <div class="info_title" onclick="ToggleInfo('SYAuthorInfoContent')">[宋元之後]</div>
+                <div class="info_content" id="SYAuthorInfoContent"></div>
+            </div>
+            <div class="info_block" id="BookstoreInfo">
+                <div class="info_title" onclick="ToggleInfo('BookstoreInfoContent')">[藏書地點]</div>
+                <div class="info_content" id="BookstoreInfoContent"></div>
+            </div>
+            <div class="info_block" id="RestorationInfo">
+                <div class="info_title" onclick="ToggleInfo('RestorationInfoContent')">[已經還原]</div>
+                <div class="info_content" id="RestorationInfoContent"></div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
