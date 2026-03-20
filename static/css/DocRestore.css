@@ -1,107 +1,228 @@
-/* static/css/DocRestore.css - 終極清晰大字版 */
+/* static/css/DocRestore.css - 2026 最終完整優化版 */
 
 :root {
-    --primary-yellow: #ffee58;
-    --academic-yellow: #fff9c4;
-    --tooltip-bg: #1e293b;
-    --tooltip-text: #ffffff;
+    --primary-yellow: #ffee58;      /* 主題黃色 */
+    --academic-yellow: #fff9c4;     /* 表格底色 */
+    --hover-yellow: #fef9c3;        /* 表頭/懸停色 */
+    --tooltip-bg: #1e293b;          /* 提示框背景（深藍黑） */
+    --tooltip-text: #ffffff !important; /* 提示框文字（純白） */
+    --border-color: #cbd5e1;        /* 邊框顏色 */
+    --link-blue: #2563eb;           /* 連結與註解藍色 */
 }
 
+/* --- 1. 基礎設定 --- */
 html, body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
+    height: 100%;
     background-color: #f5f7fa;
-    /* 確保標楷體優先，若無則使用微軟正黑體 */
     font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
+    color: #334155;
+    font-size: 16px; /* 全域大字體 */
 }
 
-#container { display: flex; max-width: 1450px; margin: 0 auto; gap: 15px; padding: 15px; }
+/* --- 2. 主佈局架構 --- */
+#container {
+    display: flex;
+    max-width: 1450px;
+    margin: 0 auto;
+    gap: 15px;
+    padding: 15px;
+}
 
+/* 左側固定搜尋欄 */
 #leftCol {
-    width: 280px; flex-shrink: 0; background: white; padding: 18px;
-    border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    height: fit-content; position: sticky; top: 15px;
+    width: 280px;
+    flex-shrink: 0;
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: fit-content;
+    position: sticky;
+    top: 15px;
+    z-index: 10;
 }
 
-#rightCol { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
-
-/* 搜尋框部分字體調大 */
-#QueryForm { display: flex; gap: 8px; margin-bottom: 15px; }
-#QueryWord { 
-    flex-grow: 1; height: 34px; border: 1px solid #cbd5e1; 
-    border-radius: 4px; padding: 0 10px; font-size: 16px; 
+/* 右側內容區 */
+#rightCol {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
-#QueryButton { 
-    height: 36px; padding: 0 15px; cursor: pointer; 
-    border-radius: 4px; border: 1px solid #cbd5e1; font-size: 16px;
-}
-#QueryButton:hover { background-color: var(--primary-yellow); }
 
-/* 卡片與標題字體調大 */
+/* --- 3. 搜尋組件 (並排顯示) --- */
+#QueryForm {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+#QueryWord {
+    flex-grow: 1;
+    height: 32px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0 10px;
+}
+
+#QueryButton {
+    height: 34px;
+    padding: 0 15px;
+    font-size: 16px;
+    background-color: #f1f5f9;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#QueryButton:hover {
+    background-color: var(--primary-yellow);
+}
+
+/* --- 4. 資訊卡片塊 --- */
 .info_block, .info_block_s {
-    background: white; padding: 12px 18px; border-radius: 8px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 5px;
 }
 
 .info_title, .info_title_s {
-    font-size: 20px; /* 從 18px 調升 */
-    font-weight: bold; border-left: 5px solid var(--primary-yellow);
-    padding-left: 10px; margin-bottom: 10px; cursor: pointer;
+    font-size: 19px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-left: 5px solid var(--primary-yellow);
+    padding-left: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
 }
 
 .info_content, .info_content_s {
-    border: 1px solid #edf2f7; border-radius: 6px; 
-    max-height: 450px; /* 稍微增加高度增加視野 */
+    border: 1px solid #edf2f7;
+    border-radius: 6px;
+    max-height: 420px;
     overflow-y: auto;
 }
 
-/* 表格內容字體全面調大 */
-table.BasicTable { border-collapse: collapse; width: 100%; background-color: var(--academic-yellow); }
-th, td { 
-    padding: 6px 10px !important; /* 稍微增加內距增加呼吸感 */
-    border: 1px solid #e2e8f0; 
-    font-size: 16px; /* 從 14px 調升，閱讀更輕鬆 */
-    text-align: left; 
+/* --- 5. 通用表格樣式 (緊湊模式) --- */
+table.BasicTable {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: var(--academic-yellow);
 }
-th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 2; }
-tr:hover { background-color: white !important; }
 
-/* Textarea 字體調大並修正高度 */
-textarea {
-    width: 98%; 
-    height: 32px; /* 增加高度以容納更大的 16px 字體 */
-    min-height: 32px; 
-    margin: 4px 0;
-    padding: 4px 8px; 
-    font-size: 15px; /* 從 13px 調升 */
-    border: 1px solid #cbd5e1;
-    resize: vertical; /* 允許垂直拉伸，適應長例句 */
-    background: #fff;
+th, td {
+    padding: 4px 8px !important;
+    border: 1px solid #e2e8f0;
+    line-height: 1.4;
+    text-align: left;
+}
+
+th {
+    background-color: var(--primary-yellow) !important;
+    color: #713f12;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+tr:hover {
+    background-color: #ffffff !important;
+}
+
+/* --- 6. 左側欄專用表格微調 --- */
+#leftCol .BasicTable td, #leftCol .BasicTable th {
+    font-size: 15px; 
+    padding: 3px 6px !important;
+}
+
+/* --- 7. 引書體例專用 Textarea 與 複製按鈕 --- */
+textarea.cite-textarea {
+    width: 98%;
+    height: 30px !important; 
+    min-height: 30px;
+    margin: 4px 0 !important;
+    padding: 4px 100px 4px 8px !important; /* 右側留空間給按鈕 */
+    font-size: 15px;
+    line-height: 22px;
     font-family: "DFKai-sb", serif;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #fff;
+    resize: none;
+    overflow: hidden;
+    display: block;
 }
 
-/* Tooltip 修正 */
-.tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; margin-right: 8px; }
-/* static/css/DocRestore.css 裡的 .tooltiptext 區塊 */
+.copy-cite-btn {
+    position: absolute;
+    right: 15px;
+    bottom: 10px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 13px;
+    background-color: var(--primary-yellow);
+    color: #333;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.9;
+}
+
+.copy-cite-btn:hover {
+    opacity: 1;
+    background-color: #ffd600;
+}
+
+.copy-cite-btn.copied {
+    background-color: #4caf50;
+    color: white;
+    border-color: #4caf50;
+}
+
+/* --- 8. Tooltip 彈出式註解 (核心修正) --- */
+.tooltip {
+    color: var(--link-blue);
+    cursor: help;
+    border-bottom: 1px dashed var(--link-blue);
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 14px;
+}
 
 .tooltiptext {
     display: none;
     position: absolute;
     background-color: var(--tooltip-bg);
-    color: var(--tooltip-text) !important;
+    color: var(--tooltip-text) !important; /* 強制白色字體 */
     padding: 8px 12px;
     border-radius: 6px;
-    width: 250px; /* 維持您想要的寬度 */
+    width: 240px;
     z-index: 100;
-    bottom: 125%; /* 顯示在圖示上方 */
+    bottom: 125%; /* 向上彈出 */
     
-    /* --- 核心修復代碼 --- */
-    left: auto;   /* 取消靠左對齊 */
-    right: 0;     /* 改為靠右對齊，讓視窗往左邊展開 */
-    /* ------------------- */
+    /* 核心修復：向左展開，防止衝出右側邊界 */
+    right: 0;
+    left: auto;
     
     font-size: 14px;
     line-height: 1.5;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    white-space: normal; /* 確保長文字會自動換行，不會撐破視窗 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    white-space: normal; /* 允許換行 */
 }
-.tooltip:hover .tooltiptext { display: block; }
+
+.tooltip:hover .tooltiptext {
+    display: block;
+}
+
+/* 捲軸美化 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
