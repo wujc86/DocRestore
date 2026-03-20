@@ -1,184 +1,137 @@
-html{
+/* DocRestore.css - 現代化學術風優化版 */
+
+html, body {
     margin: 0;
     padding: 0;
-    font-family: "DFKai-sb";         
+    height: 100%;
+    background-color: #f5f7fa; /* 輕微的灰色底，讓白色卡片更明顯 */
+    font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
 }
 
-textarea{
-    font-size: 20px;
-    width:380px; 
-    height:400px;
-}
-
-th{
-	font-style: bold;
-    background-color: #ffee58;
-}
-
-tr{
-    background-color: #ffff8b;
-}
-
-tr:hover{
-    background-color: #ffffff;
-}
-
-a {
-    text-decoration:none;
-}
-
-a:hover {
-    text-decoration:underline;
-}
-
-
-#BaseInfo tr:nth-child(n+2):nth-child(odd){
-    background-color: #e0ffff;
-}
-
-#container{
-    /*text-align: center;*/
+/* 主容器：改用 Flex 佈局 */
+#container {
+    display: flex;
+    max-width: 1400px;
     margin: 0 auto;
-    vertical-align: middle;
-    width: 1280px;
-    min-height: 800px;
+    gap: 20px;
+    padding: 20px;
 }
 
-#leftCol{
-    overflow: hidden;
-    display: inline-block;    
-    padding-right: 10px;
-    width:250px;
-    min-height:800px;
-    border: solid;
-    background-color: #FFFFFF;
+/* 左側欄：固定在視窗左側 */
+#leftCol {
+    width: 280px;
+    flex-shrink: 0;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
 }
 
-#rightCol{
-    display: inline-block;
-    overflow: scroll;
-    width: 970px;
-    min-height: 800px;
-    border: solid;
-    background-color: #FFFFFF;
+/* 右側欄：內容區 */
+#rightCol {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* 區塊間距 */
 }
 
-#footer{
-    width: 100%;
-    height: 40px;
-    text-align: center;
-}
-
-#QueryForm{
-	display: inline-block;
-}
-
-#QueryWord{
-    display: inline-block;
-    margin-left: 10px;
-    width: 160px;
-    height: 24px;
+/* 標題與搜尋框美化 */
+.info_title, .info_title_s {
     font-size: 20px;
-    font-family: "DFKai-sb"; 
-}
-
-#QueryButton{
-    display: inline-block;    
-    font-family: "DFKai-sb"; 
-    font-size:20px;        
-    width: 60px;
-    height: 31px;
-    text-align: center;
-}
-
-#QueryButton:hover {
-	background-color: #4CAF50;
-}
-
-.info_block{
-    font-size: 16px;
-    padding-left: 5px;
-    display: none;
-    width: 100%;
-}
-
-.info_title{
-    font-size: 24px;
     font-weight: bold;
-    margin-top: 10px;
-    border:    3px solid #efefef;
-    border-bottom: 1px solid #efefef;
-    background-color: #efefef;
-    color: #000000;
-    height: 25px;
-    width: 125px;
+    color: #2c3e50;
+    border-left: 5px solid #ffee58; /* 黃色裝飾條 */
+    padding-left: 10px;
+    margin-bottom: 12px;
+    height: auto;
+    width: auto;
+    background: none;
 }
 
-.info_content{
-    padding: 0px;
-    border: 1px solid #efefef;
-    width: 100%;
-    max-height: 160px;
-    overflow: auto;
-    background-color:#FFFFFF;
+/* 資訊卡片容器 */
+.info_block, .info_block_s {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: none; /* 預設隱藏，由 JS 控制顯示 */
 }
 
-.info_block_s{
-    font-size: 16px;
-    padding-left: 5px;
-    display: none;
-    width: 100%;
+.info_content, .info_content_s {
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    max-height: 400px; /* 增加高度限制，讓視野更廣 */
+    overflow-y: auto;
 }
 
-.info_title_s{
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 10px;
-    border:    3px solid #efefef;
-    border-bottom: 1px solid #efefef;
-    background-color: #efefef;
-    color: #000000;
-    height: 25px;
-    width: 125px;
+/* 表格優化 */
+table.BasicTable {
+    border-collapse: collapse;
+    font-size: 15px;
+    background-color: #fff;
 }
 
-.info_content_s{
-    padding: 0px;
-    border: 1px solid #efefef;
-    width: 100%;
-    max-height: 160px;
-    overflow: auto;
-    background-color:#FFFFFF;
+th {
+    background-color: #fef9c3 !important; /* 淡淡的學術黃 */
+    color: #713f12;
+    padding: 12px 8px;
+    position: sticky; /* 表頭固定 */
+    top: 0;
+    z-index: 2;
+    border-bottom: 2px solid #eab308;
 }
 
-.citeformtr{
-    width: 100%;
-    /*border: 1px solid #efefef;*/
+td {
+    padding: 10px 8px;
+    border: 1px solid #f1f5f9;
+    line-height: 1.6;
 }
 
+tr:nth-child(even) {
+    background-color: #fafafa; /* 斑馬紋 */
+}
+
+tr:hover {
+    background-color: #f0f9ff !important; /* 滑鼠懸停效果 */
+}
+
+/* 針對引書體例中的 textarea 優化 */
+textarea {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #fff;
+    color: #334155;
+    resize: vertical;
+}
+
+/* 捲軸美化 (Chrome/Safari) */
+.info_content::-webkit-scrollbar {
+    width: 8px;
+}
+.info_content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.info_content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Tooltip 美化 */
 .tooltip {
-    width:85%;
-    text-decoration: underline;  
-    margin-top:2px;
-    margin-bottom:2px;
+    color: #2563eb;
+    cursor: help;
+    border-bottom: 1px dashed #2563eb;
+    display: inline-block;
 }
 
 .tooltiptext {
-    /*visibility: hidden;*/
-    display: none;
-    width: 240px;
-    background-color: black;
-    color: #fff;
-    text-align: left;
-    border-radius: 6px;
-    padding: 5px 0;
-
-    /* Position the tooltip */
-    position: relative;
-    z-index: 1;
-}
-
-.tooltip:hover .tooltiptext {
-    /*visibility: visible;*/
-    display:block;
+    background-color: #1e293b;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
