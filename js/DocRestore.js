@@ -1,4 +1,4 @@
-// js/DocRestore.js
+// js/DocRestore.js - 2026 最終修正版
 
 // 將 Unicode \uXXXX 轉為中文的輔助函數
 function decodeUnicode(str) {
@@ -20,20 +20,42 @@ let chunkCache = {}; // 快取已下載的 chunk
 
 // 初始化：網頁載入時先下載小檔案
 $(document).ready(function() {
+    console.log("系統初始化中...");
     $("#QueryWord").focus();
+    
+    // 預載基礎資料
     loadBaseData();
     loadRestorationCatalog();
+
+    // 綁定全域「一鍵複製」按鈕事件 (使用事件委派以處理動態產生的內容)
+    $(document).on("click", ".copy-cite-btn", function() {
+        const $btn = $(this);
+        const text = $btn.siblings("textarea").val();
+        
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = $btn.text();
+            $btn.text("已複製！").addClass("copied");
+            setTimeout(() => {
+                $btn.text(originalText).removeClass("copied");
+            }, 2000);
+        }).catch(err => {
+            console.error("複製失敗", err);
+            alert("瀏覽器不支援自動複製，請手動選取複製。");
+        });
+    });
 });
 
-// 1. 並行載入基礎資料檔 (SYAuthor, Bookstore 等)
+// 1. 並行載入基礎資料檔 (修正路徑為 static/data/)
 async function loadBaseData() {
     console.log("正在載入基礎資料...");
     const files = ['CiteForm', 'SYAuthor', 'Bookstore', 'AuthorDynasty', 'TSLegends'];
     
-    // 使用 Promise.all 並行載入
     const promises = files.map(file => 
-        fetch(`./data/${file}.json`)
-            .then(response => response.json())
+        fetch(`./static/data/${file}.json`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
             .then(json => dataStore[file] = json)
             .catch(err => console.error(`載入 ${file} 失敗`, err))
     );
@@ -42,12 +64,14 @@ async function loadBaseData() {
     console.log("基礎資料載入完成。");
 }
 
-// 2. 載入 Restoration 的索引目錄
+// 2. 載入 Restoration 的索引目錄 (修正路徑)
 async function loadRestorationCatalog() {
     try {
-        const response = await fetch('./data/restoration_db/catalog.json');
-        restorationCatalog = await response.json();
-        console.log("Restoration 索引載入完成。");
+        const response = await fetch('./static/data/restoration_db/catalog.json');
+        if (response.ok) {
+            restorationCatalog = await response.json();
+            console.log("Restoration 索引載入完成。");
+        }
     } catch (err) {
         console.error("載入 Restoration 索引失敗", err);
     }
@@ -64,13 +88,10 @@ async function getQueryResult() {
     
     $(".info_block").css("display", "block");
     $(".info_block_s").css("display", "block");
-    $(".info_content, .info_content_s").html("資料檢索中...");
+    $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
 
     // 1. [作者朝代] (左側側欄專用渲染)
-    // 假設資料結構為：[0]作者, [1]朝代, [2]朝代序, [3]備註
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0].includes(query));
-    
-    // 呼叫專為左側欄設計的渲染函式
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes, [120, 80]);
 
     // 2. [唐宋傳奇]
@@ -94,7 +115,7 @@ async function getQueryResult() {
     bookstoreResults.unshift(dataStore.Bookstore[0]);
     renderTable("BookstoreInfoContent", bookstoreResults, [180, 50, 40, 80, 100, 100, 30, 30]);
 
-    // 5. [引書體例]
+    // 5. [引書體例] (包含一鍵複製按鈕)
     const citeFormResults = dataStore.CiteForm.filter(info => 
         info[0].includes(query) || info[2].includes(query) || info[3].includes(query) || info[4].includes(query)
     );
@@ -102,16 +123,16 @@ async function getQueryResult() {
 
     // 6. [已經還原]
     if (query.length <= 1) {
-        $("#RestorationInfoContent").html("查詢不足兩個字不提供本檢索服務");
+        $("#RestorationInfoContent").html("<div style='padding:10px;'>查詢不足兩個字不提供本檢索服務</div>");
     } else {
         searchRestorationDynamic(query);
     }
 }
 
-// Restoration 專用搜尋
+// Restoration 專用搜尋 (動態分片)
 async function searchRestorationDynamic(query) {
     if (!restorationCatalog) {
-        $("#RestorationInfoContent").html("索引目錄載入中，請稍候...");
+        $("#RestorationInfoContent").html("<div style='padding:10px;'>索引目錄載入中，請稍候...</div>");
         return;
     }
 
@@ -131,11 +152,11 @@ async function searchRestorationDynamic(query) {
     }
 
     if (chunkIdsToDownload.size === 0) {
-        $("#RestorationInfoContent").html("查無資料");
+        $("#RestorationInfoContent").html("<div style='padding:10px;'>查無資料</div>");
         return;
     }
 
-    $("#RestorationInfoContent").html(`正在從 ${chunkIdsToDownload.size} 個數據分片中檢索...`);
+    $("#RestorationInfoContent").html(`<div style='padding:10px;'>正在從 ${chunkIdsToDownload.size} 個數據分片中檢索...</div>`);
     
     const searchPromises = Array.from(chunkIdsToDownload).map(async (chunkId) => {
         let chunkData;
@@ -143,7 +164,7 @@ async function searchRestorationDynamic(query) {
             chunkData = chunkCache[chunkId];
         } else {
             try {
-                const response = await fetch(`./data/restoration_db/chunk_${chunkId}.json`);
+                const response = await fetch(`./static/data/restoration_db/chunk_${chunkId}.json`);
                 chunkData = await response.json();
                 chunkCache[chunkId] = chunkData;
             } catch (err) {
@@ -158,7 +179,7 @@ async function searchRestorationDynamic(query) {
     const finalResults = [].concat(...resultsArray);
 
     if (finalResults.length === 0) {
-        $("#RestorationInfoContent").html("查無資料");
+        $("#RestorationInfoContent").html("<div style='padding:10px;'>查無資料</div>");
     } else {
         finalResults.unshift(["書證", "還原文獻出版訊息", "備注"]);
         renderTable("RestorationInfoContent", finalResults, [500, 200, 80]);
@@ -174,10 +195,10 @@ function renderTable(containerId, data, colWidths) {
     const $container = $("#" + containerId);
     $container.html("");
     if (!data || data.length <= 1) {
-        $container.html("查無資料");
+        $container.html("<div style='padding:10px;'>查無資料</div>");
         return;
     }
-    const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" }).css("background-color", "#fff9c4");
+    const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" });
     const $head = $("<tr></tr>");
     data[0].forEach((h, j) => {
         $("<th></th>").attr("width", `${colWidths[j] || 100}px`).css("text-align", "left").html(h).appendTo($head);
@@ -197,93 +218,69 @@ function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent");
     $container.html("");
     if (!results || results.length === 0) {
-        $container.html("查無資料");
+        $container.html("<div style='padding:10px;'>查無資料</div>");
         return;
     }
-    const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" }).css("background-color", "#fff9c4");
+    const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" });
+    
     results.forEach(rowData => {
         const $div = $("<div></div>").addClass("citeformtr");
-        const $content1 = $("<tr></tr>");
-        for (let j = 0; j < 5; j++) {
-            const $td = $("<td></td>").css("text-align", "left");
-            switch (j) {
-                case 0: $td.attr({ width: "100px", rowspan: "2", valign: "middle" }).html(rowData[0]); break;
-                case 1: $td.attr({ width: "60px", valign: "middle", rowspan: "2" }).html(rowData[1]); break;
-                case 2: $td.attr({ width: "140px", valign: "middle", rowspan: "2" }).html(rowData[2]); break;
-                case 3: $td.attr({ width: "500px" }).html(rowData[3]); break;
-                case 4: 
-                    $td.attr({ width: "60px", valign: "middle", rowspan: "2" });
-                    if (rowData[5]) {
-                        const $tt = $("<div></div>").addClass("tooltip").html("[備註]");
-                        $("<div></div>").addClass("tooltiptext").html(rowData[5]).appendTo($tt);
-                        $tt.appendTo($td);
-                    }
-                    if (rowData[6]) {
-                        const $tt = $("<div></div>").addClass("tooltip").html("[補充]");
-                        $("<div></div>").addClass("tooltiptext").html(rowData[6]).appendTo($tt);
-                        $tt.appendTo($td);
-                    }
-                    break;
-            }
-            $td.appendTo($content1);
-        }
-        $content1.appendTo($div);
-        const $content2 = $("<tr></tr>");
-        const $tdInput = $("<td></td>").attr("width", "560px");
-        $("<textarea>").css({ "font-size": "14px", "width": "560px", "height": "40px" }).html(rowData[4]).appendTo($tdInput);
-        $tdInput.appendTo($content2);
-        $content2.appendTo($div);
+        const $tr1 = $("<tr></tr>");
+        
+        // 欄位 0-4 分配到第一列
+        $tr1.append(`<td width="100" rowspan="2" valign="middle"><b>${rowData[0]}</b></td>`);
+        $tr1.append(`<td width="60" rowspan="2" valign="middle">${rowData[1]}</td>`);
+        $tr1.append(`<td width="140" rowspan="2" valign="middle">${rowData[2]}</td>`);
+        $tr1.append(`<td width="500">${rowData[3]}</td>`);
+        
+        // 備註與補充 (Tooltip)
+        let tooltips = "";
+        if (rowData[5]) tooltips += `<div class="tooltip">[備註]<div class="tooltiptext">${rowData[5]}</div></div>`;
+        if (rowData[6]) tooltips += `<div class="tooltip">[補充]<div class="tooltiptext">${rowData[6]}</div></div>`;
+        $tr1.append(`<td width="60" rowspan="2" valign="middle">${tooltips}</td>`);
+        $tr1.appendTo($div);
+
+        // 第二列：例句內容 + 複製按鈕
+        const $tr2 = $("<tr></tr>");
+        $tr2.append(`<td width="560" style="position:relative; padding:0 !important;">
+            <textarea readonly class="cite-textarea">${rowData[4]}</textarea>
+            <button class="copy-cite-btn" type="button">複製引證</button>
+        </td>`);
+        $tr2.appendTo($div);
+        
         $div.appendTo($table);
     });
     $table.appendTo($container);
 }
 
-function ToggleInfo(target){
-    if($("#"+target).css("display") == "block"){
-        $("#"+target).css("display","none");
-    } else {
-        $("#"+target).css("display","block");
-    }
-}
-
-// [作者朝代] 左側側欄專用渲染：僅 2 欄，備註轉 Tipbox，隱藏朝代序
+// [作者朝代] 左側側欄專用渲染
 function renderLeftAuthorTable(id, data, widths) {
     const $container = $("#" + id);
     if (!data || data.length === 0) { 
-        $container.html("<div style='padding:5px;'>查無資料</div>"); 
+        $container.html("<div style='padding:10px;'>查無資料</div>"); 
         return; 
     }
     
     const $table = $("<table></table>").addClass("BasicTable").attr({ width: "100%", border: "1" });
-    
-    // 1. 生成精簡表頭 (僅 2 欄)
-    const $head = $("<tr></tr>");
-    ["作者", "朝代"].forEach((h, j) => {
-        $("<th></th>").attr("width", `${widths[j]}px`).html(h).appendTo($head);
-    });
+    const $head = $("<tr><th>作者</th><th>朝代</th></tr>");
     $head.appendTo($table);
     
-    // 2. 生成資料列
     data.forEach(row => {
         const $tr = $("<tr></tr>");
-        
-        // 第一欄：作者 (row[0]) + 備註 (row[3]) Tooltip
         const $tdAuthor = $("<td></td>").css("position", "relative");
         let authorHtml = `<span>${row[0]}</span>`;
         
-        // 如果有第四欄 (備註 row[3])，則加上 Tipbox
         if (row[3] && row[3].toString().trim().length > 0) {
             authorHtml += ` <div class="tooltip academic-tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
         }
         $tdAuthor.html(authorHtml).appendTo($tr);
-        
-        // 第二欄：朝代 (row[1])
         $("<td></td>").html(row[1]).appendTo($tr);
-        
-        // 第三欄 (朝代序 row[2]) 自動被忽略，不執行 append
-        
         $tr.appendTo($table);
     });
     
     $container.html($table);
+}
+
+function ToggleInfo(target){
+    $("#" + target).toggle();
 }
