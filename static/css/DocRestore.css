@@ -1,4 +1,4 @@
-/* static/css/DocRestore.css - 2026 最終收合佈局版 */
+/* static/css/DocRestore.css - 2026 最終介面平衡版 */
 
 :root {
     --primary-yellow: #ffee58;
@@ -18,97 +18,77 @@ html, body {
     overflow: hidden;
 }
 
-#container { 
-    display: flex; 
-    width: 100%;
-    height: 100vh; 
-    gap: 15px; 
-    padding: 15px; 
-}
+#container { display: flex; width: 100%; height: 100vh; gap: 15px; padding: 15px; }
 
-/* --- 左側欄位修復 --- */
+/* --- 1. 左側欄位：縮短高度，確保能看見兩個區塊 --- */
 #leftCol {
-    width: 290px; flex-shrink: 0; background: white; padding: 15px;
+    width: 290px; flex-shrink: 0; background: white; padding: 12px;
     border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; height: calc(100vh - 30px);
 }
 
-/* 搜尋列並排修正 */
-#QueryForm { 
-    display: flex; gap: 5px; margin-bottom: 20px; flex-shrink: 0; 
-    align-items: center; width: 100%;
-}
-#QueryWord { 
-    flex: 1; height: 36px; border: 1px solid var(--border-color); 
-    border-radius: 4px; padding: 0 10px; font-size: 16px;
-}
-#QueryButton { 
-    width: 65px; height: 36px; cursor: pointer; border-radius: 4px; 
-    border: 1px solid var(--border-color); background: #f1f5f9; font-size: 15px;
-}
+#QueryForm { display: flex; gap: 5px; margin-bottom: 15px; flex-shrink: 0; }
+#QueryWord { flex: 1; height: 34px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px; }
+#QueryButton { width: 60px; height: 34px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: #f1f5f9; }
 
 #resultArea { flex: 1; overflow-y: auto; }
 
-/* 左側區塊樣式 */
-.info_block_s { 
-    background: #ffffff; padding: 10px; border-radius: 8px; 
-    border: 1px solid #f1f5f9; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.info_title_s { 
-    font-size: 18px; font-weight: bold; border-left: 5px solid var(--primary-yellow); 
-    padding-left: 10px; margin-bottom: 8px; cursor: pointer;
-}
+.info_block_s { background: #ffffff; padding: 8px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 10px; }
+.info_title_s { font-size: 17px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 10px; margin-bottom: 5px; }
 
-/* --- 右側內容區：自動摺疊與平分布局 --- */
+/* 核心修正：左側單個結果區不超過 180px */
+.info_content_s { max-height: 180px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 4px; }
+
+/* --- 2. 右側內容區：修復收合高度與按鈕排版 --- */
 #rightCol { 
     flex: 1; display: flex; flex-direction: column; gap: 10px; 
     height: calc(100vh - 30px); overflow-y: auto; min-width: 0; 
 }
 
 .info_block { 
-    display: flex; /* 標題永遠顯示 */
-    flex-direction: column;
-    background: white; padding: 10px 15px; border-radius: 8px; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex; flex-direction: column; background: white; 
+    padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     flex-shrink: 0; 
-    transition: flex 0.3s ease;
 }
 
-/* 有資料的區塊會獲得 flex: 1 並撐開 */
-.info_block.has-data {
-    flex: 1;
-    min-height: 250px; /* 保證看到多筆資料 */
+/* 當區塊為「展開」狀態 (has-data 或 manual-open) 時的高度規則 */
+.info_block.has-data, .info_block.manual-open {
+    flex: 1; 
+    min-height: 220px; /* 至少看到 3-4 筆資料的高度 */
 }
 
-.info_title { 
-    font-size: 19px; font-weight: bold; border-left: 5px solid var(--primary-yellow); 
-    padding-left: 12px; margin-bottom: 5px; cursor: pointer; flex-shrink: 0;
-}
+.info_title { font-size: 18px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 12px; margin-bottom: 5px; cursor: pointer; }
 
-/* 內容區：沒資料或收合時隱藏 */
-.info_content { 
-    flex: 1; overflow-y: auto; border: 1px solid #edf2f7; border-radius: 6px;
-    display: none; /* 預設隱藏內容，僅留標題 */
-}
+/* 內容區顯示邏輯 */
+.info_content { flex: 1; overflow-y: auto; border: 1px solid #edf2f7; border-radius: 6px; display: none; }
+.info_block.has-data .info_content, .info_block.manual-open .info_content { display: block; }
 
-/* 當有資料或手動展開時顯示內容 */
-.info_block.has-data .info_content,
-.info_block.manual-open .info_content {
-    display: block;
-}
-
-/* 表格與引證樣式保持 */
+/* 表格設定 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
-th, td { padding: 8px 10px !important; border: 1px solid #e2e8f0; line-height: 1.5; font-size: 15px; vertical-align: middle; }
+th, td { padding: 8px !important; border: 1px solid #e2e8f0; line-height: 1.4; font-size: 15px; vertical-align: middle; }
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
+/* --- 引證容器：修正按鈕擠壓問題 --- */
+.cite-container { 
+    display: flex; 
+    align-items: center; /* 讓按鈕與單行文字框對齊 */
+    gap: 8px; 
+    width: 100%; 
+}
+
 textarea.cite-textarea {
-    flex: 1; width: 100%; field-sizing: content; min-height: 38px;
-    padding: 8px 10px !important; font-size: 16px; border: 1px solid var(--border-color); 
+    flex: 1; width: 100%; field-sizing: content; min-height: 36px;
+    padding: 6px 10px !important; font-size: 15px; border: 1px solid var(--border-color); 
     border-radius: 4px; resize: none; overflow: hidden; background: #fff;
     white-space: pre-wrap; word-break: break-all;
 }
-.copy-cite-btn { flex-shrink: 0; width: 55px; height: 34px; font-size: 14px; font-weight: bold; background-color: var(--primary-yellow); border: 1px solid #b49e00; border-radius: 4px; cursor: pointer; }
+
+.copy-cite-btn { 
+    flex-shrink: 0; /* 禁止按鈕縮小或擠壓 */
+    width: 50px; height: 32px; font-size: 14px; font-weight: bold; 
+    background-color: var(--primary-yellow); border: 1px solid #b49e00; 
+    border-radius: 4px; cursor: pointer; 
+}
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
