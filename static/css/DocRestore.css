@@ -1,10 +1,10 @@
-/* static/css/DocRestore.css - 2026 引證自動擴展修正版 */
+/* static/css/DocRestore.css - 2026 並排精簡版 */
 
 :root {
     --primary-yellow: #ffee58;
     --academic-yellow: #fff9c4;
     --tooltip-bg: #1e293b;
-    --tooltip-text: #ffffff !important;
+    --tooltip-text: #ffffff;
     --border-color: #cbd5e1;
 }
 
@@ -20,7 +20,7 @@ html, body {
 
 #container { display: flex; max-width: 1450px; margin: 0 auto; gap: 15px; padding: 15px; }
 
-/* 左側欄位 */
+/* 左側欄 */
 #leftCol {
     width: 280px; flex-shrink: 0; background: white; padding: 15px;
     border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -42,48 +42,50 @@ html, body {
     overflow-y: auto; 
     border: 1px solid #edf2f7; 
     border-radius: 6px; 
-    position: relative; 
 }
 
-/* 表格百分比佈局 */
+/* 表格設定 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
-th, td { padding: 8px 8px !important; border: 1px solid #e2e8f0; line-height: 1.5; text-align: left; word-wrap: break-word; vertical-align: top; }
+th, td { padding: 8px !important; border: 1px solid #e2e8f0; line-height: 1.5; text-align: left; word-wrap: break-word; vertical-align: middle; }
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
-/* --- 引證文字筐核心修正 --- */
+/* --- 引證容器修正 --- */
+.cite-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
 textarea.cite-textarea {
-    width: 100% !important;
-    min-height: 45px;      /* 設定最小高度 */
-    height: auto;          /* 允許自動增長 */
-    margin: 5px 0 !important;
-    padding: 8px 95px 8px 10px !important; /* 右側留空間給按鈕 */
+    flex: 1;               /* 佔滿剩餘空間 */
+    height: 38px !important; 
+    margin: 0 !important;
+    padding: 6px 10px !important; 
     font-size: 16px; 
-    line-height: 1.6;
+    line-height: 24px;
     border: 1px solid var(--border-color); 
     border-radius: 4px;
     resize: none; 
-    overflow-y: hidden;    /* 隱藏筐內捲軸，直接撐開 */
-    display: block; 
+    overflow-y: auto;      /* 字太多時出現捲軸 */
     background: #fff; 
     font-family: "DFKai-sb", serif;
+    white-space: pre-wrap;
 }
 
-/* 複製按鈕：固定在右下角 */
 .copy-cite-btn {
-    position: absolute; 
-    right: 12px; 
-    bottom: 12px; 
-    height: 28px; 
-    padding: 0 10px; 
+    flex-shrink: 0;        /* 禁止按鈕縮小 */
+    width: 60px; 
+    height: 32px; 
     font-size: 14px;
     background-color: var(--primary-yellow); 
     border: 1px solid var(--border-color); 
     border-radius: 4px; 
-    cursor: pointer; 
-    z-index: 20;
-    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
+.copy-cite-btn:hover { background-color: #ffd600; }
 .copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
 
 /* Tooltip */
