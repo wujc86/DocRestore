@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 智慧檢索系統完整版
+// js/DocRestore.js - 2026 最終修復整合版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -9,7 +9,7 @@ $(document).ready(function() {
     loadBaseData();
     loadRestorationCatalog();
 
-    // 複製按鈕事件
+    // 複製按鈕功能
     $(document).on("click", ".copy-cite-btn", function() {
         const $btn = $(this);
         const text = $btn.siblings("textarea").val();
@@ -42,20 +42,20 @@ async function getQueryResult() {
     const query = $('#QueryWord').val().trim();
     if (!query) return;
 
-    // 搜尋前：重置右側所有區塊狀態
+    // 重置右側
     $(".info_block").removeClass("has-data manual-open");
     $(".info_content").html("");
 
-    // 1. [作者朝代] (左側)
+    // 1. [作者朝代] - 修正註解渲染
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
-    // 2. [唐宋傳奇] (左側)
+    // 2. [唐宋傳奇]
     const tsRes = dataStore.TSLegends.filter(info => (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query)));
     tsRes.unshift(["作者", "書名", "朝代"]);
     renderTable("TSLegendsInfoContent", tsRes, ["35%", "45%", "20%"]);
 
-    // 3. [引書體例] (右側 1)
+    // 3. [引書體例]
     const citeRes = dataStore.CiteForm.filter(info => 
         (info[0] && info[0].toString().includes(query)) || (info[2] && info[2].toString().includes(query)) || 
         (info[3] && info[3].toString().includes(query)) || (info[4] && info[4].toString().includes(query))
@@ -65,7 +65,7 @@ async function getQueryResult() {
         renderCiteForm(citeRes);
     }
 
-    // 4. [宋元之後] (右側 2 - 6 欄位)
+    // 4. [宋元之後]
     const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && ((info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))));
     if (syRes.length > 0) {
         $("#SYAuthorInfo").addClass("has-data");
@@ -73,7 +73,7 @@ async function getQueryResult() {
         renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
     }
 
-    // 5. [藏書地點] (右側 3 - 8 欄位)
+    // 5. [藏書地點]
     const bookRes = dataStore.Bookstore.filter((info, idx) => {
         const title = info[0] ? info[0].toString() : "";
         const author = info[4] ? info[4].toString() : "";
@@ -85,44 +85,50 @@ async function getQueryResult() {
         renderTable("BookstoreInfoContent", bookRes, ["25%", "12%", "10%", "15%", "15%", "13%", "5%", "5%"]);
     }
 
-    // 6. [已經還原] (右側 4)
+    // 6. [已經還原]
     searchRestorationDynamic(query);
 
-    // 文字框高度自動校準
+    // 文字框高度校準
     setTimeout(() => {
         $('.cite-textarea').each(function() {
             this.style.height = 'auto'; 
             this.style.height = this.scrollHeight + 'px'; 
         });
-    }, 300); 
+    }, 250); 
 }
 
-/** 渲染左側作者朝代 (含 Tooltip) */
+/** 渲染左側作者朝代 (包含 Tooltip 正確包裹) */
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
     const $table = $("<table></table>").addClass("BasicTable");
-    $table.append("<tr><th width='60%'>作者</th><th width='40%'>朝代</th></tr>");
+    $table.append("<tr><th>作者</th><th>朝代</th></tr>");
     
     data.forEach(row => {
-        let note = row[3] ? ` <span class="tooltip">[註]<span class="tooltiptext">${row[3]}</span></span>` : "";
-        $table.append(`<tr><td>${row[0]}${note}</td><td>${row[1]}</td></tr>`);
+        // row[0]是作者, row[1]是朝代, row[3]是註解
+        let authorCell = row[0];
+        if (row[3] && row[3].toString().trim() !== "") {
+            authorCell += ` <span class="tooltip">[註]<span class="tooltiptext">${row[3]}</span></span>`;
+        }
+        $table.append(`<tr><td>${authorCell}</td><td>${row[1]}</td></tr>`);
     });
     $container.append($table);
 }
 
-/** 渲染右側引書體例 */
+/** 渲染引書體例 */
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     const $table = $("<table></table>").addClass("BasicTable").css("width", "100%");
     results.forEach(row => {
-        const note = row[5] ? ` <span class="tooltip">[註]<span class="tooltiptext">${row[5]}</span></span>` : "";
         const citeContent = row[4] ? row[4].toString().trim() : "";
+        let note = "";
+        if (row[5]) note = `<span class="tooltip">[註]<span class="tooltiptext">${row[5]}</span></span>`;
+        
         let html = `<tr>
             <td width="15%" rowspan="2"><b>${row[0]}</b></td>
             <td width="10%" rowspan="2">${row[1]}</td>
             <td width="15%" rowspan="2">${row[2]}</td>
             <td width="50%">
-                <div class="cite-template-text">${row[3]}</div>
+                <div style="font-weight:bold;margin-bottom:5px;font-size:16px;">${row[3]}</div>
                 <div class="cite-container"><textarea readonly class="cite-textarea">${citeContent}</textarea><button class="copy-cite-btn">複製</button></div>
             </td>
             <td width="10%" rowspan="2">${note}</td>
@@ -132,7 +138,7 @@ function renderCiteForm(results) {
     $container.append($table);
 }
 
-/** 通用表格渲染 (支援唐宋傳奇的 Tooltip) */
+/** 通用表格渲染 */
 function renderTable(id, data, widths) {
     const $container = $("#" + id).html("");
     const $table = $("<table></table>").addClass("BasicTable");
@@ -141,7 +147,7 @@ function renderTable(id, data, widths) {
         let tr = "<tr>";
         row.forEach((cell, j) => {
             let content = cell || "";
-            // 針對左側 [唐宋傳奇] 的註解判斷 (row[3])
+            // 唐宋傳奇註解判斷
             if (id === "TSLegendsInfoContent" && i !== 0 && j === 2 && row[3]) {
                 content += ` <span class="tooltip">[註]<span class="tooltiptext">${row[3]}</span></span>`;
             }
@@ -152,7 +158,7 @@ function renderTable(id, data, widths) {
     $container.append($table);
 }
 
-/** 搜尋已經還原 */
+/** 已經還原搜尋 */
 async function searchRestorationDynamic(query) {
     if (!restorationCatalog) return;
     let chunkIds = new Set();
@@ -174,7 +180,7 @@ async function searchRestorationDynamic(query) {
     }
 }
 
-/** 手動收合功能：切換狀態 */
+/** 收合切換 */
 function ToggleInfo(contentId) {
     const $block = $("#" + contentId).parent(".info_block");
     if ($block.hasClass("has-data") || $block.hasClass("manual-open")) {
