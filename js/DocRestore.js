@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 引證自動增長與欄位對齊版
+// js/DocRestore.js - 2026 按鈕外置精簡版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -9,12 +9,13 @@ $(document).ready(function() {
     loadBaseData();
     loadRestorationCatalog();
 
+    // 複製功能
     $(document).on("click", ".copy-cite-btn", function() {
         const $btn = $(this);
         const text = $btn.siblings("textarea").val();
         navigator.clipboard.writeText(text).then(() => {
             const originalText = $btn.text();
-            $btn.text("已複製").addClass("copied");
+            $btn.text("OK").addClass("copied");
             setTimeout(() => { $btn.text(originalText).removeClass("copied"); }, 2000);
         });
     });
@@ -44,28 +45,23 @@ async function getQueryResult() {
     $(".info_content, .info_content_s").html("<div style='padding:10px;'>檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
-    // 1. 作者朝代
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
-    // 2. 唐宋傳奇
     const tsRes = dataStore.TSLegends.filter(info => (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query)));
     tsRes.unshift(["作者", "書名", "朝代"]);
     renderTable("TSLegendsInfoContent", tsRes, ["30%", "50%", "20%"]);
 
-    // 3. 引書體例 (自動擴展 Textarea)
     const citeRes = dataStore.CiteForm.filter(info => 
         (info[0] && info[0].toString().includes(query)) || (info[2] && info[2].toString().includes(query)) || 
         (info[3] && info[3].toString().includes(query)) || (info[4] && info[4].toString().includes(query))
     );
     renderCiteForm(citeRes);
 
-    // 4. 宋元之後 (對齊 6 欄位)
     const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && ((info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))));
     syRes.unshift(["書（曲）名", "作者", "出處", "冊數-頁碼", "朝代", "重覆優先者"]);
     renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
 
-    // 5. 藏書地點 (對齊 8 欄位)
     const bookRes = dataStore.Bookstore.filter((info, idx) => {
         const title = info[0] ? info[0].toString() : "";
         const author = info[4] ? info[4].toString() : "";
@@ -77,14 +73,6 @@ async function getQueryResult() {
     } else { $("#BookstoreInfoContent").html("<div style='padding:10px;'>查無資料</div>"); }
 
     searchRestorationDynamic(query);
-
-    // 重要：渲染完畢後，修正所有文字筐高度
-    setTimeout(() => {
-        $('.cite-textarea').each(function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight + 2) + 'px';
-        });
-    }, 100);
 }
 
 function renderLeftAuthorTable(id, data) {
@@ -115,9 +103,12 @@ function renderCiteForm(results) {
             <td width="55%">${row[3]}</td>
             <td width="8%" rowspan="2">${tooltips}</td>
         </tr>`;
-        html += `<tr><td style="position:relative; padding:0!important;">
-            <textarea readonly class="cite-textarea">${row[4]}</textarea>
-            <button class="copy-cite-btn">複製引證</button>
+        // --- 核心修正：按鈕移出 Textarea ---
+        html += `<tr><td style="padding:8px !important;">
+            <div class="cite-container">
+                <textarea readonly class="cite-textarea">${row[4]}</textarea>
+                <button class="copy-cite-btn">複製</button>
+            </div>
         </td></tr>`;
         $table.append(html);
     });
