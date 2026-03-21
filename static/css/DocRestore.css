@@ -1,4 +1,4 @@
-/* static/css/DocRestore.css - 2026 介面終極整合版 */
+/* static/css/DocRestore.css - 2026 最終介面校正版 */
 
 :root {
     --primary-yellow: #ffee58;
@@ -6,7 +6,6 @@
     --tooltip-bg: #1e293b;
     --tooltip-text: #ffffff;
     --border-color: #cbd5e1;
-    --header-text: #1a202c;
 }
 
 * { box-sizing: border-box; }
@@ -17,37 +16,39 @@ html, body {
     font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
     color: #334155;
     height: 100vh;
-    overflow: hidden; /* 保持視窗固定，不出現整體大捲軸 */
+    overflow: hidden;
 }
 
 #container { 
     display: flex; 
-    width: 100%;
-    height: 100vh; 
-    gap: 15px; 
-    padding: 15px; 
+    width: 100%; height: 100vh; 
+    gap: 15px; padding: 15px; 
 }
 
-/* --- 左側欄位：高度控制與 Tooltip 方向修正 --- */
+/* --- 左側欄位修正：徹底禁止左右移動 --- */
 #leftCol {
     width: 290px; flex-shrink: 0; background: white; padding: 12px;
     border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; height: calc(100vh - 30px);
+    overflow-x: hidden; /* 防止任何東西撐開左側欄 */
 }
 
-#QueryForm { display: flex; gap: 5px; margin-bottom: 15px; flex-shrink: 0; align-items: center; }
+#QueryForm { display: flex; gap: 5px; margin-bottom: 15px; flex-shrink: 0; }
 #QueryWord { flex: 1; height: 34px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px; font-size: 16px; }
-#QueryButton { width: 60px; height: 34px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: #f1f5f9; }
+#QueryButton { width: 60px; height: 34px; cursor: pointer; border-radius: 4px; background: #f1f5f9; }
 
-#resultArea { flex: 1; overflow-y: auto; }
+#resultArea { flex: 1; overflow-y: auto; overflow-x: hidden; }
 
 .info_block_s { background: #ffffff; padding: 8px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 10px; }
 .info_title_s { font-size: 17px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 10px; margin-bottom: 5px; }
 
-/* 修正：左側區塊固定高度，確保一開始就能看到兩個區塊 */
-.info_content_s { max-height: 180px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 4px; }
+/* 修正：左側表格內容區禁絕左右捲軸 */
+.info_content_s { 
+    max-height: 180px; overflow-y: auto; overflow-x: hidden; 
+    border: 1px solid #f1f5f9; border-radius: 4px; 
+}
 
-/* --- 右側內容區：智慧高度與自動撐開 --- */
+/* --- 右側內容區保持彈性 --- */
 #rightCol { 
     flex: 1; display: flex; flex-direction: column; gap: 10px; 
     height: calc(100vh - 30px); overflow-y: auto; min-width: 0; 
@@ -56,57 +57,65 @@ html, body {
 .info_block { 
     display: flex; flex-direction: column; background: white; 
     padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    flex-shrink: 0; margin-bottom: 5px;
+    flex-shrink: 0; 
 }
 
-/* 有資料或手動展開時的彈性高度 */
-.info_block.has-data, .info_block.manual-open {
-    display: flex;
-    flex: 1; 
-    min-height: 250px; /* 保證至少呈現四筆左右的高度 */
-}
-
+.info_block.has-data, .info_block.manual-open { flex: 1; min-height: 250px; }
 .info_title { font-size: 18px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 12px; margin-bottom: 5px; cursor: pointer; }
 .info_content { flex: 1; overflow-y: auto; border: 1px solid #edf2f7; border-radius: 6px; display: none; }
 .info_block.has-data .info_content, .info_block.manual-open .info_content { display: block; }
 
-/* 表格樣式：固定比例分配 */
+/* 表格強制換行邏輯 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
-th, td { padding: 8px 10px !important; border: 1px solid #e2e8f0; line-height: 1.5; font-size: 15px; vertical-align: middle; }
+th, td { 
+    padding: 8px !important; border: 1px solid #e2e8f0; line-height: 1.4; 
+    font-size: 15px; vertical-align: middle; 
+    word-break: break-all; /* 強制長字折行，防止撐開表格 */
+}
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
-/* 引證區塊：標題強調與複製按鈕並排 */
-.cite-template-text { color: var(--header-text); font-weight: bold; font-size: 17px; margin-bottom: 8px; display: block; }
-.cite-container { display: flex; align-items: flex-end; gap: 10px; width: 100%; }
-textarea.cite-textarea {
-    flex: 1; width: 100%; 
-    field-sizing: content; /* 2026 現代瀏覽器自動高度屬性 */
-    min-height: 38px; 
-    padding: 8px 10px !important; font-size: 16px; border: 1px solid var(--border-color); 
-    border-radius: 4px; resize: none; overflow: hidden; background: #fff;
-    white-space: pre-wrap; word-break: break-all;
-}
-.copy-cite-btn { 
-    flex-shrink: 0; width: 55px; height: 34px; font-size: 14px; font-weight: bold; 
-    background-color: var(--primary-yellow); border: 1px solid #b49e00; border-radius: 4px; cursor: pointer; 
-}
-.copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
+/* 複寫左側表格的寬度分配，確保不會擠壓 */
+#leftCol table.BasicTable td:first-child { width: 65%; }
+#leftCol table.BasicTable td:last-child { width: 35%; }
 
-/* --- Tooltip 方向安全邏輯 --- */
-.tooltip { position: relative; display: inline-block; color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; margin-left: 5px; }
+/* --- Tooltip 核心修正：防止溢出與撐開 --- */
+.tooltip { 
+    position: relative; display: inline-block; color: #2563eb; 
+    cursor: help; border-bottom: 1px dashed #2563eb; margin-left: 4px; 
+}
+
 .tooltip .tooltiptext {
-    visibility: hidden; width: 220px; background-color: var(--tooltip-bg); color: #fff !important;
+    visibility: hidden; 
+    width: 200px; /* 稍微縮小寬度以適應側欄 */
+    background-color: var(--tooltip-bg); color: #fff !important;
     padding: 8px 12px; border-radius: 6px; position: absolute; z-index: 9999;
-    bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s;
+    bottom: 125%; left: 0; /* 左側對齊，向右展開 */
+    opacity: 0; transition: opacity 0.2s;
     white-space: normal; word-break: break-all; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+
 .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
 
-/* 左側：ToolTip 向右展開 (左對齊) */
-#leftCol .tooltiptext { left: 0 !important; transform: translateX(0); }
+/* 針對左側攔：確保 Tooltip 不會超出左側，也不要太寬 */
+#leftCol .tooltiptext {
+    left: 0 !important; 
+    max-width: 180px; /* 限制註解的最大寬度，不超過側欄太多 */
+}
 
-/* 右側：ToolTip 向左展開 (右對齊) */
-#rightCol .tooltiptext { left: auto !important; right: 0 !important; transform: translateX(0); }
+/* 針對右側區：Tooltip 改向左展開 */
+#rightCol .tooltiptext {
+    left: auto !important; right: 0 !important; 
+}
+
+/* 引證文字框樣式保持 */
+.cite-container { display: flex; align-items: center; gap: 8px; width: 100%; }
+textarea.cite-textarea {
+    flex: 1; width: 100%; field-sizing: content; min-height: 36px;
+    padding: 6px 10px !important; font-size: 16px; border: 1px solid var(--border-color); 
+    border-radius: 4px; resize: none; overflow: hidden; background: #fff;
+    white-space: pre-wrap;
+}
+.copy-cite-btn { flex-shrink: 0; width: 50px; height: 32px; font-size: 14px; background-color: var(--primary-yellow); border: 1px solid #b49e00; border-radius: 4px; cursor: pointer; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
