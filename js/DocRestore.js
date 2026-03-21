@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 最終欄位比例優化版
+// js/DocRestore.js - 2026 動態摺疊優化版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -41,55 +41,87 @@ async function getQueryResult() {
     const query = $('#QueryWord').val().trim();
     if (!query) return;
 
-    $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
-    $(".info_block, .info_block_s").show();
+    // 清空並隱藏所有右側區塊
+    $(".info_block").removeClass("has-data").hide();
 
-    // 1. [作者朝代] 左側
+    // 1. 左側欄位
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
-    // 2. [唐宋傳奇] 修正：給予作者更多空間 (40%)，縮減朝代 (15%)
     const tsRes = dataStore.TSLegends.filter(info => (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query)));
     tsRes.unshift(["作者", "書名", "朝代"]);
-    renderTable("TSLegendsInfoContent", tsRes, ["40%", "45%", "15%"]);
+    renderTable("TSLegendsInfoContent", tsRes, ["30%", "50%", "20%"]);
 
-    // 3. [引書體例] (保持標題強化)
+    // 2. [引書體例]
     const citeRes = dataStore.CiteForm.filter(info => 
         (info[0] && info[0].toString().includes(query)) || (info[2] && info[2].toString().includes(query)) || 
         (info[3] && info[3].toString().includes(query)) || (info[4] && info[4].toString().includes(query))
     );
-    renderCiteForm(citeRes);
+    if (citeRes.length > 0) {
+        $("#CiteFormInfo").addClass("has-data").show();
+        renderCiteForm(citeRes);
+    }
 
-    // 4. [宋元之後] (對齊 6 欄位)
+    // 3. [宋元之後]
     const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && ((info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))));
-    syRes.unshift(["書（曲）名", "作者", "出處", "冊數-頁碼", "朝代", "重覆優先者"]);
-    renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
+    if (syRes.length > 0) {
+        $("#SYAuthorInfo").addClass("has-data").show();
+        syRes.unshift(["書（曲）名", "作者", "出處", "冊數-頁碼", "朝代", "重覆優先者"]);
+        renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
+    }
 
-    // 5. [藏書地點] (對齊 8 欄位)
+    // 4. [藏書地點]
     const bookRes = dataStore.Bookstore.filter((info, idx) => {
         const title = info[0] ? info[0].toString() : "";
         const author = info[4] ? info[4].toString() : "";
         return title.includes(query) || author.includes(query);
     });
     if (bookRes.length > 0) {
+        $("#BookstoreInfo").addClass("has-data").show();
         bookRes.unshift(["書名", "存放位置", "修訂本常用", "出版社", "作者", "備註", "送掃", "不在架上"]);
         renderTable("BookstoreInfoContent", bookRes, ["25%", "12%", "10%", "15%", "15%", "13%", "5%", "5%"]);
-    } else { $("#BookstoreInfoContent").html("<div style='padding:10px;'>查無資料</div>"); }
+    }
 
+    // 5. [已經還原]
     searchRestorationDynamic(query);
 
-    // 自動撐開高度邏輯
+    // 文字框撐開
     setTimeout(() => {
         $('.cite-textarea').each(function() {
             this.style.height = 'auto'; 
             this.style.height = this.scrollHeight + 'px'; 
         });
-    }, 200); 
+    }, 250); 
 }
 
+async function searchRestorationDynamic(query) {
+    if (!restorationCatalog) return;
+    let chunkIds = new Set();
+    Object.keys(restorationCatalog).forEach(key => {
+        if (key.includes(query) || query.includes(key)) restorationCatalog[key].forEach(id => chunkIds.add(id));
+    });
+
+    if (!chunkIds.size) return;
+
+    const promises = Array.from(chunkIds).map(async id => {
+        const res = await fetch(`./data/restoration_db/chunk_${id}.json`);
+        const data = await res.json();
+        return data.filter(info => info[0] && info[0].toString().includes(query));
+    });
+
+    const resArray = await Promise.all(promises);
+    const final = [].concat(...resArray);
+    
+    if (final.length > 0) {
+        $("#RestorationInfo").addClass("has-data").show();
+        final.unshift(["書證", "還原文獻資訊", "備注"]);
+        renderTable("RestorationInfoContent", final, ["60%", "25%", "15%"]);
+    }
+}
+
+// 渲染輔助函式保持原本邏輯...
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
-    if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
     const $table = $("<table></table>").addClass("BasicTable");
     $table.append("<tr><th width='60%'>作者</th><th width='40%'>朝代</th></tr>");
     data.forEach(row => {
@@ -103,11 +135,8 @@ function renderLeftAuthorTable(id, data) {
 
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
-    if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
     const $table = $("<table></table>").addClass("BasicTable").css("width", "100%");
     results.forEach(row => {
-        const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
-                         (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
         const citeContent = row[4] ? row[4].toString().trim() : "";
         let html = `<tr>
             <td width="15%" rowspan="2"><b>${row[0]}</b></td>
@@ -115,12 +144,9 @@ function renderCiteForm(results) {
             <td width="15%" rowspan="2">${row[2]}</td>
             <td width="50%">
                 <div class="cite-template-text">${row[3]}</div>
-                <div class="cite-container">
-                    <textarea readonly rows="1" class="cite-textarea">${citeContent}</textarea>
-                    <button class="copy-cite-btn">複製</button>
-                </div>
+                <div class="cite-container"><textarea readonly rows="1" class="cite-textarea">${citeContent}</textarea><button class="copy-cite-btn">複製</button></div>
             </td>
-            <td width="10%" rowspan="2">${tooltips}</td>
+            <td width="10%" rowspan="2"></td>
         </tr>`;
         html += `<tr><td style="display:none;"></td></tr>`; 
         $table.append(html);
@@ -130,7 +156,6 @@ function renderCiteForm(results) {
 
 function renderTable(id, data, widths) {
     const $container = $("#" + id).html("");
-    if (!data.length) return;
     const $table = $("<table></table>").addClass("BasicTable");
     data.forEach((row, i) => {
         const tag = i === 0 ? "th" : "td";
@@ -143,26 +168,3 @@ function renderTable(id, data, widths) {
     });
     $container.append($table);
 }
-
-async function searchRestorationDynamic(query) {
-    if (!restorationCatalog) return;
-    let chunkIds = new Set();
-    Object.keys(restorationCatalog).forEach(key => {
-        if (key.includes(query) || query.includes(key)) restorationCatalog[key].forEach(id => chunkIds.add(id));
-    });
-    if (!chunkIds.size) { $("#RestorationInfoContent").html("<div style='padding:10px;'>查無資料</div>"); return; }
-    const promises = Array.from(chunkIds).map(async id => {
-        if (chunkCache[id]) return chunkCache[id].filter(info => info[0] && info[0].toString().includes(query));
-        const res = await fetch(`./data/restoration_db/chunk_${id}.json`);
-        chunkCache[id] = await res.json();
-        return chunkCache[id].filter(info => info[0] && info[0].toString().includes(query));
-    });
-    const res = await Promise.all(promises);
-    const final = [].concat(...res);
-    if (final.length) {
-        final.unshift(["書證", "還原文獻資訊", "備注"]);
-        renderTable("RestorationInfoContent", final, ["60%", "25%", "15%"]);
-    } else { $("#RestorationInfoContent").html("<div style='padding:10px;'>無匹配詞條</div>"); }
-}
-
-function ToggleInfo(target) { $("#" + target).toggle(); }
