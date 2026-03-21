@@ -1,15 +1,12 @@
-/* static/css/DocRestore.css - 2026 介面修復與平分布局版 */
+/* static/css/DocRestore.css - 2026 動態空間極大化版 */
 
 :root {
     --primary-yellow: #ffee58;
     --academic-yellow: #fff9c4;
     --tooltip-bg: #1e293b;
-    --tooltip-text: #ffffff;
     --border-color: #cbd5e1;
-    --header-text: #1a202c;
 }
 
-/* 核心修正：盒模型 */
 * { box-sizing: border-box; }
 
 html, body {
@@ -18,7 +15,7 @@ html, body {
     font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
     color: #334155;
     height: 100vh;
-    overflow: hidden; /* 防止最外層出現大捲軸 */
+    overflow: hidden; /* 保持視窗固定，由內層捲動 */
 }
 
 #container { 
@@ -29,114 +26,49 @@ html, body {
     padding: 15px; 
 }
 
-/* --- 左側欄位修正：恢復區塊感與搜尋列樣式 --- */
+/* --- 左側欄位保持 --- */
 #leftCol {
-    width: 290px; 
-    flex-shrink: 0; 
-    background: white; 
-    padding: 15px;
-    border-radius: 10px; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 30px);
+    width: 290px; flex-shrink: 0; background: white; padding: 15px;
+    border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; height: calc(100vh - 30px);
 }
+#QueryForm { display: flex; gap: 5px; margin-bottom: 20px; flex-shrink: 0; }
+#QueryWord { flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px; }
+#QueryButton { width: 65px; height: 36px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border-color); background: #f1f5f9; }
+#resultArea { flex: 1; overflow-y: auto; }
 
-#leftCol img {
-    width: 100%;
-    height: auto;
-    margin-bottom: 15px;
-}
-
-/* 搜尋表單修復 */
-#QueryForm { 
-    display: flex; 
-    gap: 5px; 
-    margin-bottom: 20px; 
-    width: 100%;
-    flex-shrink: 0;
-}
-
-#QueryWord { 
-    flex: 1; 
-    height: 36px; 
-    font-size: 16px; 
-    border: 1px solid var(--border-color); 
-    border-radius: 4px; 
-    padding: 0 10px;
-    min-width: 0;
-}
-
-#QueryButton { 
-    width: 65px; 
-    height: 36px; 
-    font-size: 15px;
-    cursor: pointer; 
-    border-radius: 4px; 
-    border: 1px solid var(--border-color); 
-    background: #f1f5f9;
-    flex-shrink: 0;
-}
-
-/* 左側結果區塊樣式恢復 */
-#resultArea {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.info_block_s { 
-    background: #ffffff; 
-    padding: 8px 12px; 
-    border-radius: 8px; 
-    border: 1px solid #f1f5f9; 
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.info_title_s { 
-    font-size: 18px; 
-    font-weight: bold; 
-    border-left: 5px solid var(--primary-yellow); 
-    padding-left: 10px; 
-    margin-bottom: 8px; 
-    cursor: pointer; 
-}
-
-.info_content_s { 
-    max-height: 300px; /* 左側小區塊內容不宜太長 */
-    overflow-y: auto; 
-}
-
-/* --- 右側內容區：等高平分布局 --- */
+/* --- 右側內容區：智慧高度核心 --- */
 #rightCol { 
     flex: 1; 
     display: flex; 
     flex-direction: column; 
-    gap: 12px; 
+    gap: 10px; 
     height: calc(100vh - 30px);
+    overflow-y: auto; /* 當多個區塊總高度超過螢幕時，允許右側整體捲動 */
     min-width: 0; 
 }
 
 .info_block { 
-    flex: 1; 
-    display: flex;
+    display: none; /* 預設完全隱藏 */
     flex-direction: column;
     background: white; 
-    padding: 12px 18px; 
+    padding: 10px 15px; 
     border-radius: 8px; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    min-height: 0; 
+    flex-shrink: 0; /* 禁止區塊為了擠進螢幕而被壓縮 */
+    margin-bottom: 5px;
+}
+
+/* 有資料時顯示的類別 */
+.info_block.has-data {
+    display: flex;
+    min-height: 250px; /* 關鍵：確保至少能看到 4 筆資料的高度 */
+    flex: 1; /* 讓顯示中的區塊平分剩餘空間，但至少有 250px */
 }
 
 .info_title { 
-    font-size: 19px; 
-    font-weight: bold; 
-    border-left: 5px solid var(--primary-yellow); 
-    padding-left: 12px; 
-    margin-bottom: 10px; 
-    cursor: pointer;
-    flex-shrink: 0;
+    font-size: 18px; font-weight: bold; border-left: 5px solid var(--primary-yellow); 
+    padding-left: 12px; margin-bottom: 8px; cursor: pointer; flex-shrink: 0;
 }
 
 .info_content { 
@@ -146,12 +78,12 @@ html, body {
     border-radius: 6px;
 }
 
-/* 表格與引證樣式保持不變 */
+/* 表格與引證樣式保持 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
-th, td { padding: 10px !important; border: 1px solid #e2e8f0; line-height: 1.5; font-size: 15px; vertical-align: middle; }
+th, td { padding: 8px 10px !important; border: 1px solid #e2e8f0; line-height: 1.5; font-size: 15px; vertical-align: middle; }
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
-.cite-template-text { color: var(--header-text); font-weight: bold; font-size: 16px; margin-bottom: 8px; display: block; }
+.cite-template-text { font-weight: bold; font-size: 16px; margin-bottom: 8px; display: block; color: #1a202c; }
 .cite-container { display: flex; align-items: flex-end; gap: 10px; width: 100%; }
 textarea.cite-textarea {
     flex: 1; width: 100%; field-sizing: content; min-height: 38px;
@@ -160,10 +92,6 @@ textarea.cite-textarea {
     white-space: pre-wrap; word-break: break-all;
 }
 .copy-cite-btn { flex-shrink: 0; width: 55px; height: 34px; font-size: 14px; font-weight: bold; background-color: var(--primary-yellow); border: 1px solid #b49e00; border-radius: 4px; cursor: pointer; }
-.copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
 
-/* Tooltip & Scrollbar */
-#rightCol .tooltiptext { right: 0; left: auto; }
-#leftCol .tooltiptext { left: 0 !important; right: auto !important; width: 200px; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
