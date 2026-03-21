@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 最終優化版
+// js/DocRestore.js - 2026 動態高度自動擴展示範版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -41,9 +41,10 @@ async function getQueryResult() {
     const query = $('#QueryWord').val().trim();
     if (!query) return;
 
-    $(".info_content, .info_content_s").html("<div style='padding:10px;'>檢索中...</div>");
+    $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
+    // 1-5 各項資料查詢 (保持不變)
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
@@ -72,11 +73,21 @@ async function getQueryResult() {
     } else { $("#BookstoreInfoContent").html("<div style='padding:10px;'>查無資料</div>"); }
 
     searchRestorationDynamic(query);
+
+    // --- 核心修正：搜尋後自動撐開文字框高度 ---
+    setTimeout(() => {
+        $('.cite-textarea').each(function() {
+            this.style.height = 'auto'; // 先設回自動以計算scrollHeight
+            this.style.height = (this.scrollHeight + 2) + 'px'; // 加上 2px 緩衝避免出現邊緣抖動
+        });
+    }, 150); // 延遲一下確保 DOM 已經完全渲染
 }
+
+// 渲染函式 (renderLeftAuthorTable, renderCiteForm, renderTable, searchRestorationDynamic 保持原本結構)
 
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
-    if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
+    if (!data.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
     const $table = $("<table></table>").addClass("BasicTable");
     $table.append("<tr><th width='60%'>作者</th><th width='40%'>朝代</th></tr>");
     data.forEach(row => {
@@ -88,7 +99,6 @@ function renderLeftAuthorTable(id, data) {
     $container.append($table);
 }
 
-// 引書體例渲染：優化空間利用
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
@@ -102,7 +112,7 @@ function renderCiteForm(results) {
             <td width="10%" rowspan="2">${row[1]}</td>
             <td width="15%" rowspan="2">${row[2]}</td>
             <td width="50%">
-                <div style="color: #666; font-size: 14px; margin-bottom: 5px;">${row[3]}</div>
+                <div style="color: #666; font-size: 14px; margin-bottom: 5px; line-height: 1.4;">${row[3]}</div>
                 <div class="cite-container">
                     <textarea readonly class="cite-textarea">${row[4]}</textarea>
                     <button class="copy-cite-btn">複製</button>
@@ -110,9 +120,7 @@ function renderCiteForm(results) {
             </td>
             <td width="10%" rowspan="2">${tooltips}</td>
         </tr>`;
-        // 注意：這裡我們把原本兩列合併處理，讓佈局更緊湊
         html += `<tr><td style="display:none;"></td></tr>`; 
-        
         $table.append(html);
     });
     $container.append($table);
