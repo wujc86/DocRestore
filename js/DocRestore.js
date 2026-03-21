@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 強調標題與動態換行版
+// js/DocRestore.js - 2026 精確高度版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -44,7 +44,6 @@ async function getQueryResult() {
     $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
-    // 各項查詢邏輯保持不變
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
@@ -74,15 +73,13 @@ async function getQueryResult() {
 
     searchRestorationDynamic(query);
 
-    // --- 核心修正：重新計算高度 ---
+    // --- 輔助邏輯：若瀏覽器較舊不支援 field-sizing，則執行此備份計算 ---
     setTimeout(() => {
         $('.cite-textarea').each(function() {
-            // 重置高度以獲得準確的 scrollHeight
             this.style.height = 'auto'; 
-            // 設定為 scrollHeight，確保文字全部顯現且不出現捲軸
-            this.style.height = this.scrollHeight + 'px'; 
+            this.style.height = (this.scrollHeight) + 'px'; 
         });
-    }, 200); 
+    }, 100); 
 }
 
 function renderLeftAuthorTable(id, data) {
@@ -99,7 +96,6 @@ function renderLeftAuthorTable(id, data) {
     $container.append($table);
 }
 
-// 引書體例渲染：強化標題視覺效果
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
@@ -108,15 +104,17 @@ function renderCiteForm(results) {
         const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
                          (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
         
+        // 核心：對 row[4] 進行 .trim() 確保沒有多餘換行
+        const citeContent = row[4] ? row[4].toString().trim() : "";
+
         let html = `<tr>
             <td width="15%" rowspan="2"><b>${row[0]}</b></td>
             <td width="10%" rowspan="2">${row[1]}</td>
             <td width="15%" rowspan="2">${row[2]}</td>
             <td width="50%">
                 <div class="cite-template-text">${row[3]}</div>
-                
                 <div class="cite-container">
-                    <textarea readonly class="cite-textarea">${row[4]}</textarea>
+                    <textarea readonly rows="1" class="cite-textarea">${citeContent}</textarea>
                     <button class="copy-cite-btn">複製</button>
                 </div>
             </td>
