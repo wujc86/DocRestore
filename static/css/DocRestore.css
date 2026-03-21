@@ -1,4 +1,4 @@
-/* static/css/DocRestore.css - 2026 並排精簡版 */
+/* static/css/DocRestore.css - 2026 空間優化版 */
 
 :root {
     --primary-yellow: #ffee58;
@@ -44,48 +44,57 @@ html, body {
     border-radius: 6px; 
 }
 
-/* 表格設定 */
+/* 表格設定：利用 vertical-align 解決下方空洞感 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
-th, td { padding: 8px !important; border: 1px solid #e2e8f0; line-height: 1.5; text-align: left; word-wrap: break-word; vertical-align: middle; }
+th, td { 
+    padding: 10px 8px !important; 
+    border: 1px solid #e2e8f0; 
+    line-height: 1.6; 
+    text-align: left; 
+    word-wrap: break-word; 
+    vertical-align: middle; /* 核心修正：讓內容在巨大的格子中居中 */
+}
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
-/* --- 引證容器修正 --- */
+/* --- 引證容器：撐滿寬度並與按鈕並排 --- */
 .cite-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
+    margin-top: 8px; /* 與上方範本文字拉開距離 */
 }
 
 textarea.cite-textarea {
-    flex: 1;               /* 佔滿剩餘空間 */
-    height: 38px !important; 
+    flex: 1;               /* 撐滿寬度 */
+    height: 40px !important; 
     margin: 0 !important;
-    padding: 6px 10px !important; 
+    padding: 8px 10px !important; 
     font-size: 16px; 
-    line-height: 24px;
+    line-height: 22px;
     border: 1px solid var(--border-color); 
     border-radius: 4px;
     resize: none; 
-    overflow-y: auto;      /* 字太多時出現捲軸 */
+    overflow-y: auto;      /* 字太長時可捲動 */
     background: #fff; 
     font-family: "DFKai-sb", serif;
-    white-space: pre-wrap;
+    white-space: nowrap;   /* 保持單行，字長則捲動 */
 }
 
 .copy-cite-btn {
-    flex-shrink: 0;        /* 禁止按鈕縮小 */
-    width: 60px; 
-    height: 32px; 
+    flex-shrink: 0;        /* 按鈕不准縮小 */
+    width: 55px; 
+    height: 34px; 
     font-size: 14px;
+    font-weight: bold;
     background-color: var(--primary-yellow); 
-    border: 1px solid var(--border-color); 
+    border: 1px solid #b49e00; 
     border-radius: 4px; 
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
-.copy-cite-btn:hover { background-color: #ffd600; }
+.copy-cite-btn:hover { background-color: #ffd600; transform: scale(1.05); }
 .copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
 
 /* Tooltip */
@@ -98,5 +107,5 @@ textarea.cite-textarea {
 #rightCol .tooltiptext { right: 0; left: auto; }
 #leftCol .tooltiptext { left: 0 !important; right: auto !important; width: 200px; }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
