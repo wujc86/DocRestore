@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 按鈕外置精簡版
+// js/DocRestore.js - 2026 最終優化版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -9,7 +9,6 @@ $(document).ready(function() {
     loadBaseData();
     loadRestorationCatalog();
 
-    // 複製功能
     $(document).on("click", ".copy-cite-btn", function() {
         const $btn = $(this);
         const text = $btn.siblings("textarea").val();
@@ -89,6 +88,7 @@ function renderLeftAuthorTable(id, data) {
     $container.append($table);
 }
 
+// 引書體例渲染：優化空間利用
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
@@ -96,20 +96,23 @@ function renderCiteForm(results) {
     results.forEach(row => {
         const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
                          (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
+        
         let html = `<tr>
             <td width="15%" rowspan="2"><b>${row[0]}</b></td>
-            <td width="7%" rowspan="2">${row[1]}</td>
+            <td width="10%" rowspan="2">${row[1]}</td>
             <td width="15%" rowspan="2">${row[2]}</td>
-            <td width="55%">${row[3]}</td>
-            <td width="8%" rowspan="2">${tooltips}</td>
+            <td width="50%">
+                <div style="color: #666; font-size: 14px; margin-bottom: 5px;">${row[3]}</div>
+                <div class="cite-container">
+                    <textarea readonly class="cite-textarea">${row[4]}</textarea>
+                    <button class="copy-cite-btn">複製</button>
+                </div>
+            </td>
+            <td width="10%" rowspan="2">${tooltips}</td>
         </tr>`;
-        // --- 核心修正：按鈕移出 Textarea ---
-        html += `<tr><td style="padding:8px !important;">
-            <div class="cite-container">
-                <textarea readonly class="cite-textarea">${row[4]}</textarea>
-                <button class="copy-cite-btn">複製</button>
-            </div>
-        </td></tr>`;
+        // 注意：這裡我們把原本兩列合併處理，讓佈局更緊湊
+        html += `<tr><td style="display:none;"></td></tr>`; 
+        
         $table.append(html);
     });
     $container.append($table);
