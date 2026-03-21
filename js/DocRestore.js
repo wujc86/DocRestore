@@ -1,173 +1,278 @@
-// js/DocRestore.js - 2026 最終欄位對齊版
+/* static/css/DocRestore.css - 2026 最終整合優化版 */
 
-let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
-let restorationCatalog = null;
-let chunkCache = {};
-
-$(document).ready(function() {
-    $("#QueryWord").focus();
-    loadBaseData();
-    loadRestorationCatalog();
-
-    // 一鍵複製功能
-    $(document).on("click", ".copy-cite-btn", function() {
-        const $btn = $(this);
-        const text = $btn.siblings("textarea").val();
-        navigator.clipboard.writeText(text).then(() => {
-            const oldText = $btn.text();
-            $btn.text("已複製").css("background", "#4caf50").css("color", "#fff");
-            setTimeout(() => { $btn.text(oldText).css("background", "").css("color", ""); }, 2000);
-        });
-    });
-});
-
-// 資料路徑：./data/
-async function loadBaseData() {
-    const files = ['CiteForm', 'SYAuthor', 'Bookstore', 'AuthorDynasty', 'TSLegends'];
-    for (const file of files) {
-        try {
-            const res = await fetch(`./data/${file}.json`);
-            dataStore[file] = await res.json();
-        } catch (e) { console.error(file + " 載入失敗"); }
-    }
+:root {
+    --primary-yellow: #ffee58;      /* 主題黃色 */
+    --academic-yellow: #fff9c4;     /* 表格底色 */
+    --tooltip-bg: #1e293b;          /* 提示框背景（深藍黑） */
+    --tooltip-text: #ffffff !important; /* 強制文字白色 */
+    --border-color: #cbd5e1;
+    --link-blue: #2563eb;           /* 連結與註解藍色 */
 }
 
-async function loadRestorationCatalog() {
-    try {
-        const res = await fetch('./data/restoration_db/catalog.json');
-        restorationCatalog = await res.json();
-    } catch (e) { console.error("還原索引載入失敗"); }
+/* 核心修正：全域設定盒模型，防止內距 (Padding) 撐破寬度 */
+* {
+    box-sizing: border-box;
 }
 
-async function getQueryResult() {
-    const query = $('#QueryWord').val().trim();
-    if (!query) return;
-
-    $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
-    $(".info_block, .info_block_s").show();
-
-    // 1. [作者朝代] 左側 2 欄
-    const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
-    renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
-
-    // 2. [唐宋傳奇] 左側
-    const tsRes = dataStore.TSLegends.filter(info => 
-        (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))
-    );
-    tsRes.unshift(["作者", "書名", "朝代"]);
-    renderTable("TSLegendsInfoContent", tsRes, ["30%", "50%", "20%"]);
-
-    // 3. [引書體例] (百分比分配)
-    const citeRes = dataStore.CiteForm.filter(info => 
-        (info[0] && info[0].toString().includes(query)) || 
-        (info[2] && info[2].toString().includes(query)) || 
-        (info[3] && info[3].toString().includes(query)) || 
-        (info[4] && info[4].toString().includes(query))
-    );
-    renderCiteForm(citeRes);
-
-    // 4. [宋元之後] 欄位對齊：書名, 作者, 出處, 冊數-頁碼, 朝代, 重覆優先者
-    const syRes = dataStore.SYAuthor.filter(info => 
-        (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))
-    );
-    syRes.unshift(["書（曲）名", "作者", "出處", "冊數-頁碼", "朝代", "重覆優先者"]);
-    renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
-
-    // 5. [藏書地點] 欄位對齊：書名, 存放位置, 修訂本常用, 出版社, 作者, 備註, 送掃, 不在架上
-    const bookRes = dataStore.Bookstore.filter(info => {
-        const title = info[0] ? info[0].toString() : "";
-        const author = info[4] ? info[4].toString() : "";
-        return title.includes(query) || author.includes(query);
-    });
-    if (bookRes.length > 0) {
-        bookRes.unshift(["書名", "存放位置", "修訂本常用", "出版社", "作者", "備註", "送掃", "不在架上"]);
-        renderTable("BookstoreInfoContent", bookRes, ["25%", "12%", "10%", "15%", "15%", "13%", "5%", "5%"]);
-    } else {
-        $("#BookstoreInfoContent").html("<div style='padding:10px;'>查無資料</div>");
-    }
-
-    // 6. [已經還原] (分片搜尋)
-    searchRestorationDynamic(query);
+/* --- 1. 基礎設定 --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    font-family: "DFKai-sb", "Microsoft JhengHei", sans-serif;
+    color: #334155;
+    font-size: 16px; 
 }
 
-// --- 渲染函式群 ---
-
-function renderLeftAuthorTable(id, data) {
-    const $container = $("#" + id).html("");
-    if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
-    const $table = $("<table></table>").addClass("BasicTable");
-    $table.append("<tr><th width='60%'>作者</th><th width='40%'>朝代</th></tr>");
-    data.forEach(row => {
-        let html = `<tr><td style="position:relative;">${row[0]}`;
-        if (row[3]) html += ` <div class="tooltip">[註]<div class="tooltiptext">${row[3]}</div></div>`;
-        html += `</td><td>${row[1]}</td></tr>`;
-        $table.append(html);
-    });
-    $container.append($table);
+#container {
+    display: flex;
+    max-width: 1450px;
+    margin: 0 auto;
+    gap: 15px;
+    padding: 15px;
 }
 
-function renderCiteForm(results) {
-    const $container = $("#CiteFormInfoContent").html("");
-    if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
-    const $table = $("<table></table>").addClass("BasicTable").css("width", "100%");
-    results.forEach(row => {
-        const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
-                         (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
-        let html = `<tr>
-            <td width="15%" rowspan="2"><b>${row[0]}</b></td>
-            <td width="7%" rowspan="2">${row[1]}</td>
-            <td width="15%" rowspan="2">${row[2]}</td>
-            <td width="55%">${row[3]}</td>
-            <td width="8%" rowspan="2">${tooltips}</td>
-        </tr>`;
-        html += `<tr>
-            <td style="position:relative; padding:0!important;">
-                <textarea readonly class="cite-textarea">${row[4]}</textarea>
-                <button class="copy-cite-btn">複製引證</button>
-            </td>
-        </tr>`;
-        $table.append(html);
-    });
-    $container.append($table);
+/* --- 2. 左側欄位 (Sidebar) --- */
+#leftCol {
+    width: 280px;
+    flex-shrink: 0; /* 禁止縮小 */
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: fit-content;
+    position: sticky; /* 捲動時固定在頂部 */
+    top: 15px;
+    z-index: 100;
 }
 
-function renderTable(id, data, widths) {
-    const $container = $("#" + id).html("");
-    if (!data.length) return;
-    const $table = $("<table></table>").addClass("BasicTable");
-    data.forEach((row, i) => {
-        const tag = i === 0 ? "th" : "td";
-        let tr = "<tr>";
-        row.forEach((cell, j) => {
-            const w = widths && widths[j] ? ` width="${widths[j]}"` : "";
-            tr += `<${tag}${w}>${cell || ""}</${tag}>`;
-        });
-        $table.append(tr + "</tr>");
-    });
-    $container.append($table);
+/* 搜尋表單佈局：解決輸入框與按鈕擠壓問題 */
+#QueryForm {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    align-items: center;
+    width: 100%;
 }
 
-async function searchRestorationDynamic(query) {
-    if (!restorationCatalog) return;
-    let chunkIds = new Set();
-    Object.keys(restorationCatalog).forEach(key => {
-        if (key.includes(query) || query.includes(key)) restorationCatalog[key].forEach(id => chunkIds.add(id));
-    });
-    if (!chunkIds.size) { $("#RestorationInfoContent").html("<div style='padding:10px;'>查無還原資料</div>"); return; }
-    const promises = Array.from(chunkIds).map(async id => {
-        if (chunkCache[id]) return chunkCache[id].filter(info => info[0] && info[0].toString().includes(query));
-        const res = await fetch(`./data/restoration_db/chunk_${id}.json`);
-        chunkCache[id] = await res.json();
-        return chunkCache[id].filter(info => info[0] && info[0].toString().includes(query));
-    });
-    const res = await Promise.all(promises);
-    const final = [].concat(...res);
-    if (final.length) {
-        final.unshift(["書證", "還原文獻資訊", "備注"]);
-        renderTable("RestorationInfoContent", final, ["60%", "25%", "15%"]);
-    } else {
-        $("#RestorationInfoContent").html("<div style='padding:10px;'>無匹配詞條</div>");
-    }
+#QueryWord {
+    flex: 1; /* 佔據剩餘空間 */
+    height: 36px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0 10px;
+    min-width: 0; /* 防止 Flex 項目溢出 */
 }
 
-function ToggleInfo(target) { $("#" + target).toggle(); }
+#QueryButton {
+    flex-shrink: 0; /* 強制按鈕不准縮小 */
+    width: 75px;    /* 固定寬度，保證不擠壓 */
+    height: 36px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: #f1f5f9;
+    padding: 0;
+    text-align: center;
+}
+
+#QueryButton:hover {
+    background-color: var(--primary-yellow);
+}
+
+/* 左側小型資訊區塊 */
+.info_block_s {
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.info_title_s {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-left: 5px solid var(--primary-yellow);
+    padding-left: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.info_content_s {
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto; /* 啟用垂直捲軸 */
+}
+
+/* --- 3. 右側內容區 (Main Content) --- */
+#rightCol {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 0; /* 確保子元素能繼承 100% 寬度 */
+}
+
+.info_block {
+    background: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.info_title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-left: 5px solid var(--primary-yellow);
+    padding-left: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* 核心：恢復區塊垂直捲軸，並隱藏水平跑版 */
+.info_content {
+    max-height: 480px; 
+    overflow-y: auto;  /* 恢復垂直捲軸 */
+    overflow-x: hidden; /* 隱藏水平溢出 */
+    border: 1px solid #edf2f7;
+    border-radius: 6px;
+    position: relative; /* 提供給 Tooltip 與按鈕定位 */
+}
+
+/* --- 4. 表格設定：百分比化撐開版面 --- */
+table.BasicTable {
+    border-collapse: collapse;
+    background-color: var(--academic-yellow);
+    width: 100% !important; /* 強制撐滿容器 */
+    table-layout: fixed;    /* 核心：啟用固定比例分配 */
+}
+
+th, td {
+    padding: 6px 8px !important;
+    border: 1px solid #e2e8f0;
+    line-height: 1.4;
+    text-align: left;
+    word-wrap: break-word; /* 防止長文字撐破欄位 */
+}
+
+th {
+    background-color: var(--primary-yellow) !important;
+    color: #713f12;
+    position: sticky;
+    top: 0; /* 表頭固定在頂部 */
+    z-index: 10;
+}
+
+tr:hover {
+    background-color: white !important;
+}
+
+/* --- 5. 引書體例專用元件 --- */
+
+/* 例句內容 Textarea */
+textarea.cite-textarea {
+    width: 100% !important;
+    height: 38px !important;
+    margin: 0 !important;
+    padding: 6px 95px 6px 10px !important; /* 右側留出 95px 給按鈕空間 */
+    font-size: 15px;
+    line-height: 24px;
+    font-family: "DFKai-sb", serif;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #fff;
+    resize: none;
+    overflow: hidden;
+    display: block;
+}
+
+/* 一鍵複製按鈕：垂直居中於 Textarea 右側 */
+.copy-cite-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%); /* 精確垂直居中 */
+    height: 26px;
+    padding: 0 10px;
+    font-size: 13px;
+    background-color: var(--primary-yellow);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 20;
+    white-space: nowrap; /* 禁止按鈕字體折行 */
+}
+
+.copy-cite-btn:hover {
+    background-color: #ffd600;
+}
+
+.copy-cite-btn.copied {
+    background-color: #4caf50;
+    color: white;
+    border-color: #4caf50;
+}
+
+/* --- 6. Tooltip 彈出註解：方向性修正防止截斷 --- */
+.tooltip {
+    color: var(--link-blue);
+    cursor: help;
+    border-bottom: 1px dashed var(--link-blue);
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 14px;
+}
+
+.tooltiptext {
+    display: none;
+    position: absolute;
+    background-color: var(--tooltip-bg);
+    color: #ffffff !important;
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 240px;
+    z-index: 9999;
+    bottom: 125%; /* 向上彈出 */
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    white-space: normal;
+}
+
+.tooltip:hover .tooltiptext {
+    display: block;
+}
+
+/* 核心邏輯：右側欄位向左展開 */
+#rightCol .tooltiptext {
+    right: 0;
+    left: auto;
+}
+
+/* 核心邏輯：左側欄位向右展開 (防止超出螢幕左邊緣) */
+#leftCol .tooltiptext {
+    left: 0 !important;
+    right: auto !important;
+    width: 200px;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.4);
+}
+
+/* --- 7. 其他美化 --- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
