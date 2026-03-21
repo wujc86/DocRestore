@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 精確高度版
+// js/DocRestore.js - 2026 最終欄位比例優化版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -44,23 +44,28 @@ async function getQueryResult() {
     $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
+    // 1. [作者朝代] 左側
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
+    // 2. [唐宋傳奇] 修正：給予作者更多空間 (40%)，縮減朝代 (15%)
     const tsRes = dataStore.TSLegends.filter(info => (info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query)));
     tsRes.unshift(["作者", "書名", "朝代"]);
-    renderTable("TSLegendsInfoContent", tsRes, ["30%", "50%", "20%"]);
+    renderTable("TSLegendsInfoContent", tsRes, ["40%", "45%", "15%"]);
 
+    // 3. [引書體例] (保持標題強化)
     const citeRes = dataStore.CiteForm.filter(info => 
         (info[0] && info[0].toString().includes(query)) || (info[2] && info[2].toString().includes(query)) || 
         (info[3] && info[3].toString().includes(query)) || (info[4] && info[4].toString().includes(query))
     );
     renderCiteForm(citeRes);
 
+    // 4. [宋元之後] (對齊 6 欄位)
     const syRes = dataStore.SYAuthor.filter((info, idx) => idx !== 0 && ((info[0] && info[0].toString().includes(query)) || (info[1] && info[1].toString().includes(query))));
     syRes.unshift(["書（曲）名", "作者", "出處", "冊數-頁碼", "朝代", "重覆優先者"]);
     renderTable("SYAuthorInfoContent", syRes, ["20%", "15%", "25%", "15%", "10%", "15%"]);
 
+    // 5. [藏書地點] (對齊 8 欄位)
     const bookRes = dataStore.Bookstore.filter((info, idx) => {
         const title = info[0] ? info[0].toString() : "";
         const author = info[4] ? info[4].toString() : "";
@@ -73,13 +78,13 @@ async function getQueryResult() {
 
     searchRestorationDynamic(query);
 
-    // --- 輔助邏輯：若瀏覽器較舊不支援 field-sizing，則執行此備份計算 ---
+    // 自動撐開高度邏輯
     setTimeout(() => {
         $('.cite-textarea').each(function() {
             this.style.height = 'auto'; 
-            this.style.height = (this.scrollHeight) + 'px'; 
+            this.style.height = this.scrollHeight + 'px'; 
         });
-    }, 100); 
+    }, 200); 
 }
 
 function renderLeftAuthorTable(id, data) {
@@ -103,10 +108,7 @@ function renderCiteForm(results) {
     results.forEach(row => {
         const tooltips = (row[5] ? `<div class="tooltip">[備註]<div class="tooltiptext">${row[5]}</div></div>` : "") + 
                          (row[6] ? `<div class="tooltip">[補充]<div class="tooltiptext">${row[6]}</div></div>` : "");
-        
-        // 核心：對 row[4] 進行 .trim() 確保沒有多餘換行
         const citeContent = row[4] ? row[4].toString().trim() : "";
-
         let html = `<tr>
             <td width="15%" rowspan="2"><b>${row[0]}</b></td>
             <td width="10%" rowspan="2">${row[1]}</td>
