@@ -1,4 +1,4 @@
-/* static/css/DocRestore.css - 2026 最終強調與自動撐開版 */
+/* static/css/DocRestore.css - 2026 現代化自動高度版 */
 
 :root {
     --primary-yellow: #ffee58;
@@ -6,7 +6,7 @@
     --tooltip-bg: #1e293b;
     --tooltip-text: #ffffff;
     --border-color: #cbd5e1;
-    --header-text: #1a202c; /* 深色文字用於強調標題 */
+    --header-text: #1a202c;
 }
 
 * { box-sizing: border-box; }
@@ -21,7 +21,7 @@ html, body {
 
 #container { display: flex; max-width: 1450px; margin: 0 auto; gap: 15px; padding: 15px; }
 
-/* 左側欄位保持不變... */
+/* 左側欄保持不變 */
 #leftCol {
     width: 280px; flex-shrink: 0; background: white; padding: 15px;
     border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -37,34 +37,31 @@ html, body {
 .info_block, .info_block_s { background: white; padding: 12px 18px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .info_title, .info_title_s { font-size: 19px; font-weight: bold; border-left: 5px solid var(--primary-yellow); padding-left: 10px; margin-bottom: 10px; cursor: pointer; }
 
-/* 區塊捲軸 */
 .info_content, .info_content_s { 
-    max-height: 650px; 
+    max-height: 700px; /* 加大檢視高度 */
     overflow-y: auto; 
     border: 1px solid #edf2f7; 
     border-radius: 6px; 
 }
 
-/* 表格設定 */
 table.BasicTable { border-collapse: collapse; background-color: var(--academic-yellow); width: 100% !important; table-layout: fixed; }
 th, td { padding: 12px 10px !important; border: 1px solid #e2e8f0; line-height: 1.6; text-align: left; word-wrap: break-word; vertical-align: middle; }
 th { background-color: var(--primary-yellow) !important; position: sticky; top: 0; z-index: 10; }
 
 /* --- 引證區塊樣式修正 --- */
 
-/* 強調標題文字 */
 .cite-template-text {
     color: var(--header-text);
     font-weight: bold;
-    font-size: 17px; /* 稍微放大 */
-    margin-bottom: 10px;
+    font-size: 17px;
+    margin-bottom: 8px;
     line-height: 1.5;
     display: block;
 }
 
 .cite-container {
     display: flex;
-    align-items: flex-end; /* 按鈕始終靠下對齊 */
+    align-items: flex-end; /* 按鈕靠底對齊 */
     gap: 10px;
     width: 100%;
 }
@@ -72,26 +69,31 @@ th { background-color: var(--primary-yellow) !important; position: sticky; top: 
 textarea.cite-textarea {
     flex: 1; 
     width: 100%;
-    min-height: 40px; 
+    
+    /* 2026 核心屬性：讓文字框高度完全隨內容自適應 */
+    field-sizing: content; 
+    
+    min-height: 36px;      /* 設定一行的基礎高度 */
+    max-height: none; 
     height: auto; 
     margin: 0 !important;
-    padding: 8px 12px !important; 
+    padding: 6px 10px !important; 
     font-size: 16px; 
-    line-height: 1.6;
+    line-height: 1.5;
     border: 1px solid var(--border-color); 
     border-radius: 4px;
     resize: none; 
-    overflow: hidden;      /* 禁止出現內部捲軸 */
+    overflow: hidden;      /* 隱藏所有捲軸 */
     background: #fff; 
     font-family: "DFKai-sb", serif;
-    white-space: pre-wrap; /* 核心修正：允許換行以觸發高度撐開 */
+    white-space: pre-wrap; 
     word-break: break-all;
 }
 
 .copy-cite-btn {
     flex-shrink: 0; 
     width: 60px; 
-    height: 34px; 
+    height: 32px; 
     font-size: 14px;
     font-weight: bold;
     background-color: var(--primary-yellow); 
@@ -100,10 +102,9 @@ textarea.cite-textarea {
     cursor: pointer;
 }
 
-.copy-cite-btn:hover { background-color: #ffd600; }
 .copy-cite-btn.copied { background-color: #4caf50; color: white; border-color: #4caf50; }
 
-/* 其他美化保持不變... */
+/* 其他美化... */
 .tooltip { color: #2563eb; cursor: help; border-bottom: 1px dashed #2563eb; position: relative; display: inline-block; margin-left: 4px; }
 .tooltiptext { display: none; position: absolute; background-color: var(--tooltip-bg); color: #fff !important; padding: 8px 12px; border-radius: 6px; width: 240px; z-index: 9999; bottom: 130%; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: normal; }
 .tooltip:hover .tooltiptext { display: block; }
