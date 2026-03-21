@@ -1,4 +1,4 @@
-// js/DocRestore.js - 2026 動態高度自動擴展示範版
+// js/DocRestore.js - 2026 強調標題與動態換行版
 
 let dataStore = { CiteForm: [], SYAuthor: [], Bookstore: [], AuthorDynasty: [], TSLegends: [] };
 let restorationCatalog = null;
@@ -44,7 +44,7 @@ async function getQueryResult() {
     $(".info_content, .info_content_s").html("<div style='padding:10px;'>資料檢索中...</div>");
     $(".info_block, .info_block_s").show();
 
-    // 1-5 各項資料查詢 (保持不變)
+    // 各項查詢邏輯保持不變
     const authorRes = dataStore.AuthorDynasty.filter(info => info[0] && info[0].toString().includes(query));
     renderLeftAuthorTable("AuthorDynastyInfoContent", authorRes);
 
@@ -74,20 +74,20 @@ async function getQueryResult() {
 
     searchRestorationDynamic(query);
 
-    // --- 核心修正：搜尋後自動撐開文字框高度 ---
+    // --- 核心修正：重新計算高度 ---
     setTimeout(() => {
         $('.cite-textarea').each(function() {
-            this.style.height = 'auto'; // 先設回自動以計算scrollHeight
-            this.style.height = (this.scrollHeight + 2) + 'px'; // 加上 2px 緩衝避免出現邊緣抖動
+            // 重置高度以獲得準確的 scrollHeight
+            this.style.height = 'auto'; 
+            // 設定為 scrollHeight，確保文字全部顯現且不出現捲軸
+            this.style.height = this.scrollHeight + 'px'; 
         });
-    }, 150); // 延遲一下確保 DOM 已經完全渲染
+    }, 200); 
 }
-
-// 渲染函式 (renderLeftAuthorTable, renderCiteForm, renderTable, searchRestorationDynamic 保持原本結構)
 
 function renderLeftAuthorTable(id, data) {
     const $container = $("#" + id).html("");
-    if (!data.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
+    if (!data.length) { $container.html("<div style='padding:5px;'>查無資料</div>"); return; }
     const $table = $("<table></table>").addClass("BasicTable");
     $table.append("<tr><th width='60%'>作者</th><th width='40%'>朝代</th></tr>");
     data.forEach(row => {
@@ -99,6 +99,7 @@ function renderLeftAuthorTable(id, data) {
     $container.append($table);
 }
 
+// 引書體例渲染：強化標題視覺效果
 function renderCiteForm(results) {
     const $container = $("#CiteFormInfoContent").html("");
     if (!results.length) { $container.html("<div style='padding:10px;'>查無資料</div>"); return; }
@@ -112,7 +113,8 @@ function renderCiteForm(results) {
             <td width="10%" rowspan="2">${row[1]}</td>
             <td width="15%" rowspan="2">${row[2]}</td>
             <td width="50%">
-                <div style="color: #666; font-size: 14px; margin-bottom: 5px; line-height: 1.4;">${row[3]}</div>
+                <div class="cite-template-text">${row[3]}</div>
+                
                 <div class="cite-container">
                     <textarea readonly class="cite-textarea">${row[4]}</textarea>
                     <button class="copy-cite-btn">複製</button>
